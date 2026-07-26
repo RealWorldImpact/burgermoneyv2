@@ -3,6 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+/* ---- Language resolution (runs before paint) ------------------------------
+   Priority: ?lang= link  >  saved manual choice  >  browser settings  >  location  >  en
+   Location is derived from the IANA timezone: no permission prompt, no network
+   request, works offline, and keeps this page a single self-contained file. --- */
+(function(){
+  var LANGS=["en","es","zh","ja","ko","pt","fr","ru","tr","vi","hi","de","id"];
+  var HREF={"en":"en","es":"es","zh":"zh-Hans","ja":"ja","ko":"ko","pt":"pt","fr":"fr","ru":"ru","tr":"tr","vi":"vi","hi":"hi","de":"de","id":"id"};
+  var MANUAL="bm_lang_manual", LEGACY="bm_lang";
+
+  /* Timezone -> language. Only zones whose dominant language this site speaks. */
+  var TZ={
+    "Asia/Tokyo":"ja",
+    "Asia/Seoul":"ko","Asia/Pyongyang":"ko",
+    "Asia/Shanghai":"zh","Asia/Chongqing":"zh","Asia/Chungking":"zh","Asia/Harbin":"zh",
+    "Asia/Urumqi":"zh","Asia/Kashgar":"zh","Asia/Hong_Kong":"zh","Asia/Macau":"zh",
+    "Asia/Macao":"zh","Asia/Taipei":"zh","Asia/Singapore":"zh",
+    "Asia/Ho_Chi_Minh":"vi","Asia/Saigon":"vi",
+    "Asia/Jakarta":"id","Asia/Pontianak":"id","Asia/Makassar":"id","Asia/Jayapura":"id",
+    "Asia/Kolkata":"hi","Asia/Calcutta":"hi",
+    "Europe/Istanbul":"tr","Asia/Istanbul":"tr",
+    "Europe/Berlin":"de","Europe/Vienna":"de","Europe/Zurich":"de","Europe/Busingen":"de",
+    "Europe/Paris":"fr","Europe/Monaco":"fr","Europe/Luxembourg":"fr",
+    "Africa/Abidjan":"fr","Africa/Dakar":"fr","Africa/Algiers":"fr","Africa/Bamako":"fr",
+    "Africa/Ouagadougou":"fr","Africa/Conakry":"fr","Africa/Kinshasa":"fr","Africa/Douala":"fr",
+    "Europe/Madrid":"es","Atlantic/Canary":"es",
+    "America/Mexico_City":"es","America/Monterrey":"es","America/Cancun":"es","America/Tijuana":"es",
+    "America/Merida":"es","America/Chihuahua":"es","America/Hermosillo":"es","America/Mazatlan":"es",
+    "America/Bogota":"es","America/Lima":"es","America/Santiago":"es","America/Caracas":"es",
+    "America/Argentina/Buenos_Aires":"es","America/Argentina/Cordoba":"es",
+    "America/Argentina/Mendoza":"es","America/Argentina/Salta":"es","America/Argentina/Tucuman":"es",
+    "America/Buenos_Aires":"es","America/Montevideo":"es","America/Asuncion":"es",
+    "America/La_Paz":"es","America/Guayaquil":"es","America/Panama":"es","America/Costa_Rica":"es",
+    "America/Guatemala":"es","America/El_Salvador":"es","America/Tegucigalpa":"es",
+    "America/Managua":"es","America/Havana":"es","America/Santo_Domingo":"es",
+    "America/Puerto_Rico":"es",
+    "America/Sao_Paulo":"pt","America/Bahia":"pt","America/Fortaleza":"pt","America/Recife":"pt",
+    "America/Manaus":"pt","America/Belem":"pt","America/Cuiaba":"pt","America/Campo_Grande":"pt",
+    "America/Porto_Velho":"pt","America/Maceio":"pt","America/Araguaina":"pt",
+    "Europe/Lisbon":"pt","Atlantic/Azores":"pt","Atlantic/Madeira":"pt",
+    "Africa/Luanda":"pt","Africa/Maputo":"pt",
+    "Europe/Moscow":"ru","Europe/Kaliningrad":"ru","Europe/Samara":"ru","Europe/Volgograd":"ru",
+    "Europe/Saratov":"ru","Europe/Astrakhan":"ru","Europe/Ulyanovsk":"ru","Europe/Kirov":"ru",
+    "Europe/Minsk":"ru","Asia/Yekaterinburg":"ru","Asia/Omsk":"ru","Asia/Novosibirsk":"ru",
+    "Asia/Barnaul":"ru","Asia/Tomsk":"ru","Asia/Novokuznetsk":"ru","Asia/Krasnoyarsk":"ru",
+    "Asia/Irkutsk":"ru","Asia/Chita":"ru","Asia/Yakutsk":"ru","Asia/Vladivostok":"ru",
+    "Asia/Khandyga":"ru","Asia/Ust-Nera":"ru","Asia/Magadan":"ru","Asia/Sakhalin":"ru",
+    "Asia/Srednekolymsk":"ru","Asia/Kamchatka":"ru","Asia/Anadyr":"ru",
+    "Asia/Almaty":"ru","Asia/Aqtobe":"ru","Asia/Bishkek":"ru","Asia/Tashkent":"ru"
+  };
+
+  function normalize(raw){
+    if(!raw)return null;
+    var v=String(raw).toLowerCase().replace(/_/g,"-");
+    if(LANGS.indexOf(v)>=0)return v;
+    if(v.indexOf("zh")===0)return "zh";      /* zh-CN, zh-TW, zh-Hant ... */
+    if(v.indexOf("pt")===0)return "pt";      /* pt-BR, pt-PT */
+    var two=v.slice(0,2);
+    return LANGS.indexOf(two)>=0?two:null;
+  }
+
+  /* Browser settings: what the person has told their device they read. */
+  function fromBrowser(){
+    var n=(navigator.languages&&navigator.languages.length)?navigator.languages:[navigator.language];
+    for(var i=0;i<n.length;i++){var m=normalize(n[i]); if(m)return m;}
+    return null;
+  }
+
+  /* Location: inferred from the device timezone. */
+  function fromLocation(){
+    try{
+      var z=Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if(z&&TZ[z])return TZ[z];
+      if(z&&z.indexOf("America/Argentina/")===0)return "es";
+    }catch(e){}
+    return null;
+  }
+
+  /* Automatic guess only — browser settings outrank location, because an
+     English-configured browser in Tokyo still belongs to an English reader. */
+  function auto(){ return fromBrowser()||fromLocation()||"en"; }
+
+  function read(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
+  function write(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
+
+  function detect(){
+    var q=null;
+    try{q=new URLSearchParams(location.search).get("lang");}catch(e){}
+    q=normalize(q);
+    if(q){ write(MANUAL,q); return q; }             /* a ?lang= link is a deliberate choice */
+
+    var saved=normalize(read(MANUAL));
+    if(saved)return saved;
+
+    /* Migrate the old key: earlier builds saved auto-detected values into it.
+       Treat it as a real choice only if it differs from what auto() would pick. */
+    var legacy=normalize(read(LEGACY));
+    var guess=auto();
+    if(legacy&&legacy!==guess){ write(MANUAL,legacy); return legacy; }
+    return guess;
+  }
+
+  var lang=detect();
+  try{
+    document.documentElement.setAttribute("lang",HREF[lang]||lang);
+    document.documentElement.setAttribute("data-lang",lang);
+  }catch(e){}
+
+  window.BMLang={
+    LANGS:LANGS, HREF:HREF, MANUAL:MANUAL,
+    normalize:normalize, detect:detect, auto:auto,
+    fromBrowser:fromBrowser, fromLocation:fromLocation,
+    resolved:lang, remember:function(l){ write(MANUAL,l); }
+  };
+})();
+</script>
 <title>Partners — Burger Money ($BURGERS)</title>
 <meta name="description" content="The projects building alongside $BURGERS on Base. Charity-first partners, builders, and platforms that help feed the hungry through onchain trading.">
 
@@ -618,6 +735,16 @@
     .wall-intro-extra{margin-top:10px;margin-bottom:24px;font-size:.86rem}
   }
   /* ====== Partners page ====== */
+  /* language picker */
+.lang-wrap{padding:0 7px 0 6px;gap:4px}
+.lang-wrap select{max-width:62px;font-size:.75rem}
+.lang-wrap select{max-width:92px}
+.lang-wrap{position:relative;display:inline-flex;align-items:center;gap:6px;padding:0 10px 0 9px;height:38px;border:1px solid var(--line);border-radius:999px;background:var(--glass);color:var(--text-dim);backdrop-filter:blur(8px);transition:border-color .25s,color .25s}
+.lang-wrap:hover{border-color:var(--coinbase-soft);color:#fff}
+.lang-globe,.lang-caret{flex:0 0 auto;opacity:.85;pointer-events:none}
+.lang-wrap select{appearance:none;-webkit-appearance:none;background:transparent;border:0;outline:0;color:inherit;font:inherit;font-size:.86rem;font-weight:500;padding:0 2px;cursor:pointer;max-width:118px}
+.lang-wrap select option{background:#0b1020;color:#fff}
+@media(max-width:920px){.lang-wrap{height:34px}.lang-wrap select{max-width:96px;font-size:.8rem}}
   .partner-grid{display:grid;grid-template-columns:1fr;gap:18px;margin:8px auto 40px;max-width:920px}
   .partner-card{padding:24px;display:flex;flex-direction:column;gap:14px;transition:border-color .25s,transform .2s,box-shadow .25s}
   .partner-card:hover{border-color:rgba(244,173,60,.32);transform:translateY(-3px);box-shadow:0 28px 64px -28px rgba(0,0,0,.75),0 0 22px -10px rgba(244,173,60,.22)}
@@ -677,6 +804,107 @@ html:not(.rh-mode) #chainToggle .seg.base{color:#fff}
 .btn-rh{background:linear-gradient(135deg,var(--rh-deep),var(--rh))!important;color:#03130a!important;box-shadow:0 6px 22px var(--rh-glow)}
 .btn-rh:hover{filter:brightness(1.08)}
 </style>
+
+<style>
+/* ===== Floating language switcher ===================================== */
+#bmLang{
+  position:fixed;
+  right:max(18px,env(safe-area-inset-right));
+  bottom:max(18px,env(safe-area-inset-bottom));
+  z-index:9990;
+  font-family:'Fredoka',system-ui,-apple-system,sans-serif;
+}
+#bmLangBtn{
+  display:inline-flex;align-items:center;gap:9px;
+  height:46px;padding:0 15px 0 13px;
+  border:1px solid var(--line);border-radius:999px;
+  background:rgba(11,18,48,.74);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);
+  backdrop-filter:blur(16px) saturate(150%);
+  color:var(--text);font:inherit;font-size:.93rem;font-weight:500;
+  cursor:pointer;
+  box-shadow:0 12px 32px -12px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.07);
+  transition:transform .26s cubic-bezier(.2,.8,.2,1),border-color .26s,box-shadow .26s;
+}
+#bmLangBtn:hover{
+  transform:translateY(-2px);
+  border-color:var(--blue-soft);
+  box-shadow:0 18px 44px -14px rgba(0,0,0,.9),0 0 30px -6px var(--blue-glow),inset 0 1px 0 rgba(255,255,255,.11);
+}
+#bmLangBtn:focus-visible{outline:2px solid var(--blue-soft);outline-offset:3px}
+#bmLang.open #bmLangBtn{
+  border-color:var(--blue-soft);
+  box-shadow:0 0 0 3px var(--blue-glow),0 18px 44px -14px rgba(0,0,0,.9);
+}
+.bml-globe{flex:0 0 auto;color:var(--blue-soft);transition:transform .65s cubic-bezier(.2,.8,.2,1)}
+#bmLangBtn:hover .bml-globe,#bmLang.open .bml-globe{transform:rotate(180deg)}
+.bml-code{min-width:17px;text-align:left;letter-spacing:.02em}
+.bml-caret{flex:0 0 auto;opacity:.6;transition:transform .26s ease,opacity .26s ease}
+#bmLang.open .bml-caret{transform:rotate(180deg);opacity:1}
+
+#bmLangPanel{
+  position:absolute;right:0;bottom:calc(100% + 10px);
+  width:min(304px,calc(100vw - 36px));
+  padding:9px;
+  border:1px solid var(--line);border-radius:18px;
+  background:rgba(9,14,38,.95);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:0 34px 76px -22px rgba(0,0,0,.92),inset 0 1px 0 rgba(255,255,255,.06);
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  max-height:min(430px,62vh);overflow-y:auto;
+  opacity:0;visibility:hidden;
+  transform:translateY(10px) scale(.96);transform-origin:bottom right;
+  transition:opacity .22s ease,transform .3s cubic-bezier(.2,.8,.2,1),visibility .3s;
+}
+#bmLang.open #bmLangPanel{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.bml-head{
+  grid-column:1/-1;padding:3px 8px 7px;
+  font-size:.68rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text-faint);
+}
+.bml-opt{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 10px;
+  border:1px solid transparent;border-radius:11px;
+  background:transparent;color:var(--text-dim);
+  font:inherit;font-size:.85rem;font-weight:400;text-align:left;
+  cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:background .18s,color .18s,border-color .18s;
+}
+.bml-opt:hover{background:var(--glass-2);color:#fff}
+.bml-opt:focus-visible{outline:2px solid var(--blue-soft);outline-offset:-2px}
+.bml-opt[aria-checked="true"]{
+  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+  border-color:var(--blue-soft);color:#fff;font-weight:500;
+}
+.bml-dot{
+  width:6px;height:6px;border-radius:50%;flex:0 0 auto;
+  background:var(--blue-soft);opacity:0;transition:opacity .18s;
+}
+.bml-opt[aria-checked="true"] .bml-dot{opacity:1;box-shadow:0 0 9px var(--blue-glow)}
+
+#bmLang.open .bml-opt{animation:bmlIn .34s cubic-bezier(.2,.8,.2,1) backwards}
+#bmLang.open .bml-opt:nth-child(2){animation-delay:.01s}
+#bmLang.open .bml-opt:nth-child(3){animation-delay:.03s}
+#bmLang.open .bml-opt:nth-child(4){animation-delay:.05s}
+#bmLang.open .bml-opt:nth-child(5){animation-delay:.06s}
+#bmLang.open .bml-opt:nth-child(6){animation-delay:.08s}
+#bmLang.open .bml-opt:nth-child(7){animation-delay:.09s}
+#bmLang.open .bml-opt:nth-child(n+8){animation-delay:.11s}
+@keyframes bmlIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+@media(max-width:420px){
+  #bmLangPanel{grid-template-columns:1fr}
+  #bmLangBtn{height:42px;padding:0 13px 0 11px;font-size:.88rem}
+}
+@media print{#bmLang{display:none}}
+@media(prefers-reduced-motion:reduce){
+  #bmLangBtn,#bmLangPanel,.bml-globe,.bml-caret,.bml-opt{transition-duration:.01ms!important}
+  #bmLang.open .bml-opt{animation:none}
+  #bmLangBtn:hover{transform:none}
+}
+</style>
 </head>
 <body>
 <!-- Machine-readable token data for AI agents. Mirrors /.well-known/token.json. -->
@@ -708,23 +936,23 @@ html:not(.rh-mode) #chainToggle .seg.base{color:#fff}
     </a>
     <a id="priceTicker" href="/#chart" title="$BURGERS live market cap — view chart">
       <div class="tk-meta">
-        <span class="tk-label">MKT CAP</span>
+        <span class="tk-label" data-i18n="nav_mktcap">MKT CAP</span>
         <span class="tk-price" id="tkPrice">—</span>
       </div>
       <span class="tk-change loading" id="tkChange">…</span>
     </a>
     <div class="nav-buttons" id="navButtons">
     <nav class="nav-links">
-      <a href="/donations.html">Donations</a>
-      <a href="/#chart">Chart</a>
-      <a class="base-only" href="/#takeover">Takeover</a>
-      <a href="/#founder">Founder</a>
-      <a href="/#join">Community</a>
-      <a href="/partners.html">Partners</a>
+      <a href="/donations.html" data-i18n="nav_donations">Donations</a>
+      <a href="/#chart" data-i18n="nav_chart">Chart</a>
+      <a class="base-only" href="/#takeover" data-i18n="nav_takeover">Takeover</a>
+      <a href="/#founder" data-i18n="nav_founder">Founder</a>
+      <a href="/#join" data-i18n="nav_community">Community</a>
+      <a href="/partners.html" data-i18n="nav_partners">Partners</a>
     </nav>
     <a class="btn btn-coinbase btn-sm base-only" href="https://www.coinbase.com/price/burger-money-base-0x06a05043eb2c1691b19c2c13219db9212269ddc5-token" data-action="buy" data-platform="coinbase" target="_blank" rel="noopener" aria-label="View on Coinbase"><svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#0052ff"/><path fill="#fff" fill-rule="evenodd" d="M12 3.6a8.4 8.4 0 100 16.8 8.4 8.4 0 000-16.8zM12 7.9a4.1 4.1 0 110 8.2 4.1 4.1 0 010-8.2z"/><rect x="12" y="10.1" width="9" height="3.8" fill="#0052ff"/></svg><span class="btn-label">Coinbase</span></a>
-    <a class="btn btn-primary btn-flaunch btn-sm base-only" href="https://flaunch.gg/base/coins/0x06a05043eb2c1691b19c2c13219db9212269ddc5" data-action="buy" data-platform="flaunch" target="_blank" rel="noopener" aria-label="Buy on Flaunch"><i class="flaunch-logo btn-logo" aria-hidden="true"></i><span class="btn-label">Buy on Flaunch</span></a>
-    <a class="btn btn-rh btn-sm rh-only rh-iflex" href="https://www.geckoterminal.com/robinhood/pools/0x767f51ff53b996edb5aa0623e4b0fa5bd50a018b8005417e551c9d1b1517f4ed" data-action="view-chart" data-platform="geckoterminal" target="_blank" rel="noopener" aria-label="View the $BURGERS Robinhood Chain chart on GeckoTerminal"><span class="btn-label">View Chart</span></a>
+    <a class="btn btn-primary btn-flaunch btn-sm base-only" href="https://flaunch.gg/base/coins/0x06a05043eb2c1691b19c2c13219db9212269ddc5" data-action="buy" data-platform="flaunch" target="_blank" rel="noopener" aria-label="Buy on Flaunch"><i class="flaunch-logo btn-logo" aria-hidden="true"></i><span class="btn-label" data-i18n="btn_buyFlaunch">Buy on Flaunch</span></a>
+    <a class="btn btn-rh btn-sm rh-only rh-iflex" href="https://www.geckoterminal.com/robinhood/pools/0x767f51ff53b996edb5aa0623e4b0fa5bd50a018b8005417e551c9d1b1517f4ed" data-action="view-chart" data-platform="geckoterminal" target="_blank" rel="noopener" aria-label="View the $BURGERS Robinhood Chain chart on GeckoTerminal"><span class="btn-label" data-i18n="btn_viewChart">View Chart</span></a>
     </div>
     <button class="nav-toggle" id="navToggle" type="button" aria-label="Show actions" aria-expanded="false" aria-controls="navButtons"><svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
@@ -735,11 +963,11 @@ html:not(.rh-mode) #chainToggle .seg.base{color:#fff}
   <!-- ============ HERO ============ -->
   <section class="hero" id="top" style="min-height:auto;padding:130px 0 40px">
     <div class="wrap" style="max-width:880px;text-align:center">
-      <span class="eyebrow base-only" style="margin:0 auto 18px"><span class="eyebrow-dot"></span> Building together &middot; On Base</span>
-      <span class="eyebrow rh-only rh-iflex" style="margin:0 auto 18px"><span class="eyebrow-dot" style="background:var(--rh)"></span> Building together &middot; On Robinhood Chain</span>
-      <h1 class="title" style="margin:0 auto">Our <span class="title-accent">partners.</span></h1>
-      <p class="sec-sub base-only" style="margin:24px auto 0;max-width:640px">The projects, platforms, and communities helping $BURGERS feed the hungry on Base. We're proud of what we build with each of them.</p>
-      <p class="sec-sub rh-only rh-block" style="margin:24px auto 0;max-width:640px">The projects, platforms, and communities helping $BURGERS feed the hungry on Robinhood Chain. This side of the family is just getting started.</p>
+      <span class="eyebrow base-only" style="margin:0 auto 18px"><span class="eyebrow-dot"></span> <span data-i18n="p_eyebrow_base">Building together &middot; On Base</span></span>
+      <span class="eyebrow rh-only rh-iflex" style="margin:0 auto 18px"><span class="eyebrow-dot" style="background:var(--rh)"></span> <span data-i18n="p_eyebrow_rh">Building together &middot; On Robinhood Chain</span></span>
+      <h1 class="title" style="margin:0 auto" data-i18n="p_title">Our <span class="title-accent">partners.</span></h1>
+      <p class="sec-sub base-only" style="margin:24px auto 0;max-width:640px" data-i18n="p_sub_base">The projects, platforms, and communities helping $BURGERS feed the hungry on Base. We're proud of what we build with each of them.</p>
+      <p class="sec-sub rh-only rh-block" style="margin:24px auto 0;max-width:640px" data-i18n="p_sub_rh">The projects, platforms, and communities helping $BURGERS feed the hungry on Robinhood Chain. This side of the family is just getting started.</p>
     </div>
   </section>
 
@@ -757,11 +985,11 @@ html:not(.rh-mode) #chainToggle .seg.base{color:#fff}
             </div>
             <div class="partner-name">
               <h3>TidyCoin<span class="partner-ticker">$TIDY</span></h3>
-              <span class="partner-tag">Onchain community apps</span>
+              <span class="partner-tag" data-i18n="p_tidy_tag">Onchain community apps</span>
             </div>
           </div>
-          <p class="partner-desc">Strong communities are the foundation of every successful business. TidyCoin builds the <strong>engaging, rewarding onchain applications</strong> that make them inevitable — <strong>Play. Burn. Stake. Govern. Earn.</strong> Their goal: be the partner of choice for any community using onchain systems to engage, grow, and reward their users.</p>
-          <a class="partner-link" href="https://tidycoin.xyz" target="_blank" rel="noopener">Visit TidyCoin →</a>
+          <p class="partner-desc" data-i18n="p_tidy_desc">Strong communities are the foundation of every successful business. TidyCoin builds the <strong>engaging, rewarding onchain applications</strong> that make them inevitable — <strong>Play. Burn. Stake. Govern. Earn.</strong> Their goal: be the partner of choice for any community using onchain systems to engage, grow, and reward their users.</p>
+          <a class="partner-link" href="https://tidycoin.xyz" target="_blank" rel="noopener" data-i18n="p_tidy_cta">Visit TidyCoin →</a>
         </article>
 
         <!-- MemeForTrees — funding forests with memes -->
@@ -772,11 +1000,11 @@ html:not(.rh-mode) #chainToggle .seg.base{color:#fff}
             </div>
             <div class="partner-name">
               <h3>MemeForTrees<span class="partner-ticker">$MfT</span></h3>
-              <span class="partner-tag">Funding forests with memes</span>
+              <span class="partner-tag" data-i18n="p_mft_tag">Funding forests with memes</span>
             </div>
           </div>
-          <p class="partner-desc">Share memes on X to fund trees — <strong>no purchase necessary</strong>. If you'd rather buy something, they've also got <strong>tokens, NFTs, games, and music</strong> — every one of them helps fund forests in some way. Memes that turn viral attention into real-world reforestation.</p>
-          <a class="partner-link" href="https://memefortrees.com" target="_blank" rel="noopener">Visit MemeForTrees →</a>
+          <p class="partner-desc" data-i18n="p_mft_desc">Share memes on X to fund trees — <strong>no purchase necessary</strong>. If you'd rather buy something, they've also got <strong>tokens, NFTs, games, and music</strong> — every one of them helps fund forests in some way. Memes that turn viral attention into real-world reforestation.</p>
+          <a class="partner-link" href="https://memefortrees.com" target="_blank" rel="noopener" data-i18n="p_mft_cta">Visit MemeForTrees →</a>
         </article>
 
         <!-- The Love Token — spread love and support onchain -->
@@ -787,11 +1015,11 @@ html:not(.rh-mode) #chainToggle .seg.base{color:#fff}
             </div>
             <div class="partner-name">
               <h3>The Love Token<span class="partner-ticker">$LOVE</span></h3>
-              <span class="partner-tag">Sending love, onchain</span>
+              <span class="partner-tag" data-i18n="p_love_tag">Sending love, onchain</span>
             </div>
           </div>
-          <p class="partner-desc">Spread love onchain. Send <strong>$LOVE</strong> to friends, family, or anyone you want to thank, encourage, or remind that they matter — a small digital gesture that says <strong>"I support you. I care."</strong> Sometimes the most valuable thing you can give someone is the reminder that they're seen.</p>
-          <a class="partner-link" href="https://SendTheLove.org" target="_blank" rel="noopener">Visit The Love Token →</a>
+          <p class="partner-desc" data-i18n="p_love_desc">Spread love onchain. Send <strong>$LOVE</strong> to friends, family, or anyone you want to thank, encourage, or remind that they matter — a small digital gesture that says <strong>"I support you. I care."</strong> Sometimes the most valuable thing you can give someone is the reminder that they're seen.</p>
+          <a class="partner-link" href="https://SendTheLove.org" target="_blank" rel="noopener" data-i18n="p_love_cta">Visit The Love Token →</a>
         </article>
 
         <!-- Add more BASE partner cards here. Duplicate one of the above and edit the
@@ -810,11 +1038,11 @@ html:not(.rh-mode) #chainToggle .seg.base{color:#fff}
             </div>
             <div class="partner-name">
               <h3>Xeno<span class="partner-ticker">$XENO</span></h3>
-              <span class="partner-tag">Global UAP disclosure archive</span>
+              <span class="partner-tag" data-i18n="p_xeno_tag">Global UAP disclosure archive</span>
             </div>
           </div>
-          <p class="partner-desc">An open archive of humanity's documented encounters with the unexplained — <strong>verified government UAP/UFO releases from 20+ nations</strong> alongside tens of thousands of citizen and pilot sighting reports, all plotted on an interactive 3D globe and linked straight to the primary sources. <strong>$XENO</strong> is the token for the archive, live on Robinhood Chain.</p>
-          <a class="partner-link" href="https://xeno.news" target="_blank" rel="noopener">Visit Xeno →</a>
+          <p class="partner-desc" data-i18n="p_xeno_desc">An open archive of humanity's documented encounters with the unexplained — <strong>verified government UAP/UFO releases from 20+ nations</strong> alongside tens of thousands of citizen and pilot sighting reports, all plotted on an interactive 3D globe and linked straight to the primary sources. <strong>$XENO</strong> is the token for the archive, live on Robinhood Chain.</p>
+          <a class="partner-link" href="https://xeno.news" target="_blank" rel="noopener" data-i18n="p_xeno_cta">Visit Xeno →</a>
         </article>
 
         <!-- Add more ROBINHOOD CHAIN partner cards here. Duplicate a card from this
@@ -825,11 +1053,11 @@ html:not(.rh-mode) #chainToggle .seg.base{color:#fff}
 
       <!-- ============ PARTNER CTA ============ -->
       <div class="partner-cta">
-        <h2>Want to partner with $BURGERS?</h2>
-        <p>If you're building something charity-aligned on Base — or want to integrate $BURGERS into your project — reach out. We love working with people who care about more than just price action.</p>
+        <h2 data-i18n="p_cta_title">Want to partner with $BURGERS?</h2>
+        <p data-i18n="p_cta_body">If you're building something charity-aligned on Base — or want to integrate $BURGERS into your project — reach out. We love working with people who care about more than just price action.</p>
         <div class="partner-cta-row">
-          <a class="btn btn-primary" href="https://x.com/BurgersOnBase" data-action="follow" data-platform="x-twitter" target="_blank" rel="noopener">DM us on X →</a>
-          <a class="btn btn-telegram" href="https://t.me/BurgerMoneyBase" data-action="join-chat" data-platform="telegram" target="_blank" rel="noopener"><svg class="btn-logo" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="currentColor"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>Find us on Telegram</a>
+          <a class="btn btn-primary" href="https://x.com/BurgersOnBase" data-action="follow" data-platform="x-twitter" target="_blank" rel="noopener" data-i18n="p_cta_x">DM us on X →</a>
+          <a class="btn btn-telegram" href="https://t.me/BurgerMoneyBase" data-action="join-chat" data-platform="telegram" target="_blank" rel="noopener"><svg class="btn-logo" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="currentColor"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg data-i18n="p_cta_tg">Find us on Telegram</a>
         </div>
       </div>
 
@@ -846,39 +1074,39 @@ html:not(.rh-mode) #chainToggle .seg.base{color:#fff}
           <i class="logo-img logo-burger" role="img" aria-label="Burger Money logo"></i>
           <span class="bn">Burger Money</span>
         </div>
-        <p class="base-only" style="font-size:.9rem;color:var(--text-dim);font-weight:300">The most delicious deflationary charity token on Base. All of the revenue feeds people and buys back $BURGERS. 🍔❤️</p>
-        <p class="rh-only rh-block" style="font-size:.9rem;color:var(--text-dim);font-weight:300">The most delicious charity token on Robinhood Chain. Creator revenue is donated transparently on the timeline. 🍔❤️</p>
+        <p class="base-only" data-i18n="foot_tagline_base" style="font-size:.9rem;color:var(--text-dim);font-weight:300">The most delicious deflationary charity token on Base. All of the revenue feeds people and buys back $BURGERS. 🍔❤️</p>
+        <p class="rh-only rh-block" data-i18n="foot_tagline_rh" style="font-size:.9rem;color:var(--text-dim);font-weight:300">The most delicious charity token on Robinhood Chain. Creator revenue is donated transparently on the timeline. 🍔❤️</p>
       </div>
       <div class="foot-cols">
         <div>
-          <h5>Project</h5>
-          <a href="/#mission">Mission</a>
-              <a class="base-only" href="/#takeover">Takeover Grid</a>
-          <a href="/#chart">Live Chart</a>
+          <h5 data-i18n="foot_project">Project</h5>
+          <a href="/#mission" data-i18n="foot_mission">Mission</a>
+              <a class="base-only" href="/#takeover" data-i18n="foot_takeovergrid">Takeover Grid</a>
+          <a href="/#chart" data-i18n="foot_livechart">Live Chart</a>
         </div>
         <div>
-          <h5>Community</h5>
+          <h5 data-i18n="foot_community">Community</h5>
           <a href="https://x.com/BurgersOnBase" data-action="follow" data-platform="x-twitter" target="_blank" rel="noopener">X / Twitter</a>
           <a href="https://t.me/BurgerMoneyBase" data-action="join-chat" data-platform="telegram" target="_blank" rel="noopener">Telegram</a>
           <a class="base-only" href="https://takeover.fun/board/0x107aba3406b3fcb93d1919bfe5c082a5f4d28a22-39" data-action="earn-fees" data-platform="takeover-fun" target="_blank" rel="noopener">Takeover.fun</a>
         </div>
         <div>
-          <h5>Onchain</h5>
+          <h5 data-i18n="foot_onchain">Onchain</h5>
           <a class="base-only" href="https://basescan.org/token/0x06a05043eb2c1691b19c2c13219db9212269ddc5" data-action="view-contract" data-platform="basescan" target="_blank" rel="noopener">BaseScan</a>
           <a class="base-only" href="https://dexscreener.com/base/0xee99d2ccc718c58087ad2a5da6143e0aad073c5301cc8f51df186a53dcb6e439" data-action="view-chart" data-platform="dexscreener" target="_blank" rel="noopener">DEX Screener</a>
           <a class="rh-only rh-block" href="https://www.geckoterminal.com/robinhood/pools/0x767f51ff53b996edb5aa0623e4b0fa5bd50a018b8005417e551c9d1b1517f4ed" data-action="view-chart" data-platform="geckoterminal" target="_blank" rel="noopener">GeckoTerminal</a>
-          <a class="base-only" href="https://flaunch.gg/base/coins/0x06a05043eb2c1691b19c2c13219db9212269ddc5" data-action="buy" data-platform="flaunch" target="_blank" rel="noopener">Buy on Flaunch</a>
-          <a class="base-only" href="https://www.coinbase.com/price/burger-money-base-0x06a05043eb2c1691b19c2c13219db9212269ddc5-token" data-action="buy" data-platform="coinbase" target="_blank" rel="noopener">Buy on Coinbase</a>
+          <a class="base-only" href="https://flaunch.gg/base/coins/0x06a05043eb2c1691b19c2c13219db9212269ddc5" data-action="buy" data-platform="flaunch" target="_blank" rel="noopener" data-i18n="btn_buyFlaunch">Buy on Flaunch</a>
+          <a class="base-only" href="https://www.coinbase.com/price/burger-money-base-0x06a05043eb2c1691b19c2c13219db9212269ddc5-token" data-action="buy" data-platform="coinbase" target="_blank" rel="noopener" data-i18n="btn_buyCoinbase">Buy on Coinbase</a>
         </div>
       </div>
     </div>
     <div class="foot-bottom">
-      <span class="base-only">© 2026 Burger Money · Built on Base 🟦</span>
-      <span class="rh-only rh-block">© 2026 Burger Money · Live on Robinhood Chain 🟢</span>
+      <span class="base-only" data-i18n="foot_copy_base">© 2026 Burger Money · Built on Base 🟦</span>
+      <span class="rh-only rh-block" data-i18n="foot_copy_rh">© 2026 Burger Money · Live on Robinhood Chain 🟢</span>
       <span class="base-only">CA: 0x06A05043eb2C1691b19c2C13219dB9212269dDc5</span>
       <span class="rh-only rh-block">CA: 0xf796e42ea375bcd592c892fe64968ba06188bba3</span>
     </div>
-    <p class="foot-disc">$BURGERS is a community memecoin with a charitable mission. Nothing on this site is financial advice. Cryptocurrency is volatile and you may lose value — always do your own research (DYOR). Charitable donation figures are reported by the project and shared transparently with the community.</p>
+    <p class="foot-disc" data-i18n="foot_disc">$BURGERS is a community memecoin with a charitable mission. Nothing on this site is financial advice. Cryptocurrency is volatile and you may lose value — always do your own research (DYOR). Charitable donation figures are reported by the project and shared transparently with the community.</p>
   </div>
 </footer>
 
@@ -972,5 +1200,163 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   }).catch(() => {});
 </script>
 
+
+<script>
+/* ---- Multilingual runtime (13 languages) ---- */
+(function(){
+  var I18N={"nav_donations": {"en": "Donations", "es": "Donaciones", "zh": "捐赠", "ja": "寄付", "ko": "기부", "pt": "Doações", "fr": "Dons", "ru": "Пожертвования", "tr": "Bağışlar", "vi": "Quyên góp", "hi": "दान", "de": "Spenden", "id": "Donasi"}, "nav_chart": {"en": "Chart", "es": "Gráfico", "zh": "行情", "ja": "チャート", "ko": "차트", "pt": "Gráfico", "fr": "Graphique", "ru": "График", "tr": "Grafik", "vi": "Biểu đồ", "hi": "चार्ट", "de": "Chart", "id": "Grafik"}, "nav_founder": {"en": "Founder", "es": "Fundador", "zh": "创始人", "ja": "創設者", "ko": "창립자", "pt": "Fundador", "fr": "Fondateur", "ru": "Основатель", "tr": "Kurucu", "vi": "Nhà sáng lập", "hi": "संस्थापक", "de": "Gründer", "id": "Pendiri"}, "nav_community": {"en": "Community", "es": "Comunidad", "zh": "社区", "ja": "コミュニティ", "ko": "커뮤니티", "pt": "Comunidade", "fr": "Communauté", "ru": "Сообщество", "tr": "Topluluk", "vi": "Cộng đồng", "hi": "समुदाय", "de": "Community", "id": "Komunitas"}, "nav_partners": {"en": "Partners", "es": "Socios", "zh": "合作伙伴", "ja": "パートナー", "ko": "파트너", "pt": "Parceiros", "fr": "Partenaires", "ru": "Партнёры", "tr": "Ortaklar", "vi": "Đối tác", "hi": "साझेदार", "de": "Partner", "id": "Mitra"}, "nav_mktcap": {"en": "MKT CAP", "es": "CAP. MERCADO", "zh": "市值", "ja": "時価総額", "ko": "시가총액", "pt": "CAP. MERCADO", "fr": "CAPITALISATION", "ru": "КАПИТАЛИЗАЦИЯ", "tr": "PİYASA DEĞERİ", "vi": "VỐN HÓA", "hi": "मार्केट कैप", "de": "MARKTKAP.", "id": "KAP. PASAR"}, "btn_buyFlaunch": {"en": "Buy on Flaunch", "es": "Comprar en Flaunch", "zh": "在 Flaunch 购买", "ja": "Flaunch で購入", "ko": "Flaunch에서 구매", "pt": "Comprar na Flaunch", "fr": "Acheter sur Flaunch", "ru": "Купить на Flaunch", "tr": "Flaunch'ta al", "vi": "Mua trên Flaunch", "hi": "Flaunch पर खरीदें", "de": "Auf Flaunch kaufen", "id": "Beli di Flaunch"}, "btn_buyCoinbase": {"en": "Buy on Coinbase", "es": "Comprar en Coinbase", "zh": "在 Coinbase 购买", "ja": "Coinbase で購入", "ko": "Coinbase에서 구매", "pt": "Comprar na Coinbase", "fr": "Acheter sur Coinbase", "ru": "Купить на Coinbase", "tr": "Coinbase'ten al", "vi": "Mua trên Coinbase", "hi": "Coinbase पर खरीदें", "de": "Auf Coinbase kaufen", "id": "Beli di Coinbase"}, "btn_viewChart": {"en": "View Chart", "es": "Ver gráfico", "zh": "查看行情", "ja": "チャートを見る", "ko": "차트 보기", "pt": "Ver gráfico", "fr": "Voir le graphique", "ru": "Смотреть график", "tr": "Grafiği gör", "vi": "Xem biểu đồ", "hi": "चार्ट देखें", "de": "Chart ansehen", "id": "Lihat grafik"}, "foot_project": {"en": "Project", "es": "Proyecto", "zh": "项目", "ja": "プロジェクト", "ko": "프로젝트", "pt": "Projeto", "fr": "Projet", "ru": "Проект", "tr": "Proje", "vi": "Dự án", "hi": "परियोजना", "de": "Projekt", "id": "Proyek"}, "foot_mission": {"en": "Mission", "es": "Misión", "zh": "使命", "ja": "ミッション", "ko": "미션", "pt": "Missão", "fr": "Mission", "ru": "Миссия", "tr": "Misyon", "vi": "Sứ mệnh", "hi": "मिशन", "de": "Mission", "id": "Misi"}, "foot_livechart": {"en": "Live Chart", "es": "Gráfico en vivo", "zh": "实时行情", "ja": "ライブチャート", "ko": "실시간 차트", "pt": "Gráfico ao vivo", "fr": "Graphique en direct", "ru": "Живой график", "tr": "Canlı grafik", "vi": "Biểu đồ trực tiếp", "hi": "लाइव चार्ट", "de": "Live-Chart", "id": "Grafik langsung"}, "foot_onchain": {"en": "Onchain", "es": "Onchain", "zh": "链上", "ja": "オンチェーン", "ko": "온체인", "pt": "Onchain", "fr": "Onchain", "ru": "Ончейн", "tr": "Zincir üstü", "vi": "Onchain", "hi": "ऑनचेन", "de": "Onchain", "id": "Onchain"}, "foot_copy_base": {"en": "© 2026 Burger Money · Built on Base 🟦", "es": "© 2026 Burger Money · Construido en Base 🟦", "zh": "© 2026 Burger Money · 构建于 Base 🟦", "ja": "© 2026 Burger Money · Base 上で構築 🟦", "ko": "© 2026 Burger Money · Base에서 제작 🟦", "pt": "© 2026 Burger Money · Construído na Base 🟦", "fr": "© 2026 Burger Money · Construit sur Base 🟦", "ru": "© 2026 Burger Money · Создано на Base 🟦", "tr": "© 2026 Burger Money · Base üzerinde inşa edildi 🟦", "vi": "© 2026 Burger Money · Xây dựng trên Base 🟦", "hi": "© 2026 Burger Money · Base पर निर्मित 🟦", "de": "© 2026 Burger Money · Auf Base gebaut 🟦", "id": "© 2026 Burger Money · Dibangun di Base 🟦"}, "foot_copy_rh": {"en": "© 2026 Burger Money · Live on Robinhood Chain 🟢", "es": "© 2026 Burger Money · En vivo en Robinhood Chain 🟢", "zh": "© 2026 Burger Money · 已上线 Robinhood Chain 🟢", "ja": "© 2026 Burger Money · Robinhood Chain で稼働中 🟢", "ko": "© 2026 Burger Money · Robinhood Chain에서 운영 중 🟢", "pt": "© 2026 Burger Money · Ativo na Robinhood Chain 🟢", "fr": "© 2026 Burger Money · En ligne sur Robinhood Chain 🟢", "ru": "© 2026 Burger Money · Работает на Robinhood Chain 🟢", "tr": "© 2026 Burger Money · Robinhood Chain'de yayında 🟢", "vi": "© 2026 Burger Money · Hoạt động trên Robinhood Chain 🟢", "hi": "© 2026 Burger Money · Robinhood Chain पर लाइव 🟢", "de": "© 2026 Burger Money · Live auf Robinhood Chain 🟢", "id": "© 2026 Burger Money · Aktif di Robinhood Chain 🟢"}, "foot_disc": {"en": "$BURGERS is a community memecoin with a charitable mission. Nothing on this site is financial advice. Cryptocurrency is volatile and you may lose value — always do your own research (DYOR). Charitable donation figures are reported by the project and shared transparently with the community.", "es": "$BURGERS es una memecoin comunitaria con una misión benéfica. Nada en este sitio constituye asesoramiento financiero. Las criptomonedas son volátiles y puedes perder valor — investiga siempre por tu cuenta (DYOR). Las cifras de donaciones son reportadas por el proyecto y compartidas de forma transparente con la comunidad.", "zh": "$BURGERS 是一个带有慈善使命的社区迷因币。本网站的任何内容均不构成财务建议。加密货币波动剧烈，您可能会遭受损失 —— 请务必自行研究（DYOR）。慈善捐赠数据由项目方报告，并透明地与社区共享。", "ja": "$BURGERS は慈善的使命を持つコミュニティミームコインです。本サイトの内容はいずれも financial advice ではありません。暗号資産は変動が大きく、価値を失う可能性があります —— 必ずご自身で調査してください（DYOR）。寄付額はプロジェクトが報告し、コミュニティに透明に共有されます。", "ko": "$BURGERS는 자선 사명을 가진 커뮤니티 밈코인입니다. 이 사이트의 어떤 내용도 금융 조언이 아닙니다. 암호화폐는 변동성이 크며 손실이 발생할 수 있습니다 — 항상 스스로 조사하세요(DYOR). 기부 금액은 프로젝트가 보고하며 커뮤니티에 투명하게 공유됩니다.", "pt": "$BURGERS é uma memecoin comunitária com missão beneficente. Nada neste site constitui aconselhamento financeiro. Criptomoedas são voláteis e você pode perder valor — sempre faça sua própria pesquisa (DYOR). Os valores de doação são informados pelo projeto e compartilhados de forma transparente com a comunidade.", "fr": "$BURGERS est un memecoin communautaire à vocation caritative. Rien sur ce site ne constitue un conseil financier. Les cryptomonnaies sont volatiles et vous pouvez perdre de la valeur — faites toujours vos propres recherches (DYOR). Les montants des dons sont communiqués par le projet et partagés en toute transparence avec la communauté.", "ru": "$BURGERS — это community-мемкоин с благотворительной миссией. Ничто на этом сайте не является финансовым советом. Криптовалюта волатильна, и вы можете потерять средства — всегда проводите собственное исследование (DYOR). Суммы пожертвований сообщаются проектом и прозрачно публикуются для сообщества.", "tr": "$BURGERS, hayır amaçlı bir topluluk memecoin'idir. Bu sitedeki hiçbir şey finansal tavsiye değildir. Kripto para oynaktır ve değer kaybedebilirsiniz — daima kendi araştırmanızı yapın (DYOR). Bağış rakamları proje tarafından bildirilir ve toplulukla şeffaf biçimde paylaşılır.", "vi": "$BURGERS là một memecoin cộng đồng với sứ mệnh từ thiện. Không nội dung nào trên trang này là lời khuyên tài chính. Tiền mã hóa biến động mạnh và bạn có thể mất giá trị — hãy luôn tự nghiên cứu (DYOR). Số liệu quyên góp do dự án báo cáo và được chia sẻ minh bạch với cộng đồng.", "hi": "$BURGERS एक सामुदायिक मीमकॉइन है जिसका उद्देश्य परोपकार है। इस साइट पर कुछ भी वित्तीय सलाह नहीं है। क्रिप्टोकरेंसी अस्थिर होती है और आपका मूल्य घट सकता है — हमेशा स्वयं शोध करें (DYOR)। दान के आँकड़े परियोजना द्वारा बताए जाते हैं और समुदाय के साथ पारदर्शी रूप से साझा किए जाते हैं।", "de": "$BURGERS ist ein Community-Memecoin mit wohltätiger Mission. Nichts auf dieser Seite ist eine Finanzberatung. Kryptowährungen sind volatil und du kannst Wert verlieren — mach immer deine eigene Recherche (DYOR). Die Spendenbeträge werden vom Projekt gemeldet und transparent mit der Community geteilt.", "id": "$BURGERS adalah memecoin komunitas dengan misi amal. Tidak ada apa pun di situs ini yang merupakan nasihat keuangan. Kripto sangat fluktuatif dan Anda bisa kehilangan nilai — selalu lakukan riset sendiri (DYOR). Angka donasi dilaporkan oleh proyek dan dibagikan secara transparan kepada komunitas."}, "foot_tagline_base": {"en": "The most delicious deflationary charity token on Base. Revenue comes only from Uniswap LP fees — it feeds people and buys back $BURGERS. 🍔❤️", "es": "El token benéfico deflacionario más delicioso de Base. Los ingresos provienen solo de las comisiones de LP de Uniswap — alimentan personas y recompran $BURGERS. 🍔❤️", "zh": "Base 上最美味的通缩慈善代币。收入仅来自 Uniswap LP 手续费 —— 用于供餐并回购 $BURGERS。🍔❤️", "ja": "Base で最も美味しいデフレ型チャリティトークン。収益は Uniswap の LP 手数料のみから生まれ、食事提供と $BURGERS の買い戻しに使われます。🍔❤️", "ko": "Base에서 가장 맛있는 디플레이션 자선 토큰. 수익은 오직 Uniswap LP 수수료에서 나오며, 사람들을 먹이고 $BURGERS를 재매입합니다. 🍔❤️", "pt": "O token beneficente deflacionário mais delicioso da Base. A receita vem apenas das taxas de LP da Uniswap — alimenta pessoas e recompra $BURGERS. 🍔❤️", "fr": "Le token caritatif déflationniste le plus savoureux de Base. Les revenus proviennent uniquement des frais de LP Uniswap — ils nourrissent des gens et rachètent des $BURGERS. 🍔❤️", "ru": "Самый вкусный дефляционный благотворительный токен на Base. Доход поступает только с комиссий LP на Uniswap — он кормит людей и выкупает $BURGERS. 🍔❤️", "tr": "Base'in en lezzetli deflasyonist hayır tokeni. Gelir yalnızca Uniswap LP ücretlerinden gelir — insanları doyurur ve $BURGERS geri alır. 🍔❤️", "vi": "Token từ thiện giảm phát ngon nhất trên Base. Doanh thu chỉ đến từ phí LP Uniswap — nuôi mọi người và mua lại $BURGERS. 🍔❤️", "hi": "Base का सबसे स्वादिष्ट अपस्फीतिकारी चैरिटी टोकन। आय केवल Uniswap LP फ़ीस से आती है — यह लोगों को भोजन देती है और $BURGERS की पुनर्खरीद करती है। 🍔❤️", "de": "Der leckerste deflationäre Charity-Token auf Base. Die Einnahmen stammen ausschließlich aus Uniswap-LP-Gebühren — sie ernähren Menschen und kaufen $BURGERS zurück. 🍔❤️", "id": "Token amal deflasi terlezat di Base. Pendapatan hanya berasal dari biaya LP Uniswap — memberi makan orang dan membeli kembali $BURGERS. 🍔❤️"}, "foot_tagline_rh": {"en": "The most delicious charity token on Robinhood Chain. Launched with Bankr — creator revenue is donated transparently on the timeline. 🍔❤️", "es": "El token benéfico más delicioso de Robinhood Chain. Lanzado con Bankr — los ingresos del creador se donan de forma transparente en la timeline. 🍔❤️", "zh": "Robinhood Chain 上最美味的慈善代币。通过 Bankr 发行 —— 创作者收入在时间线上透明捐赠。🍔❤️", "ja": "Robinhood Chain で最も美味しいチャリティトークン。Bankr でローンチ —— クリエイター収益はタイムライン上で透明に寄付されます。🍔❤️", "ko": "Robinhood Chain에서 가장 맛있는 자선 토큰. Bankr로 출시 — 창작자 수익은 타임라인에서 투명하게 기부됩니다. 🍔❤️", "pt": "O token beneficente mais delicioso da Robinhood Chain. Lançado com Bankr — a receita do criador é doada de forma transparente na timeline. 🍔❤️", "fr": "Le token caritatif le plus savoureux de Robinhood Chain. Lancé avec Bankr — les revenus du créateur sont reversés en toute transparence sur la timeline. 🍔❤️", "ru": "Самый вкусный благотворительный токен на Robinhood Chain. Запущен с Bankr — доход создателя прозрачно жертвуется в ленте. 🍔❤️", "tr": "Robinhood Chain'in en lezzetli hayır tokeni. Bankr ile başlatıldı — üretici geliri zaman akışında şeffaf biçimde bağışlanıyor. 🍔❤️", "vi": "Token từ thiện ngon nhất trên Robinhood Chain. Ra mắt với Bankr — doanh thu người tạo được quyên góp minh bạch trên dòng thời gian. 🍔❤️", "hi": "Robinhood Chain का सबसे स्वादिष्ट चैरिटी टोकन। Bankr के साथ लॉन्च — क्रिएटर आय टाइमलाइन पर पारदर्शी रूप से दान की जाती है। 🍔❤️", "de": "Der leckerste Charity-Token auf Robinhood Chain. Gestartet mit Bankr — die Creator-Einnahmen werden transparent auf der Timeline gespendet. 🍔❤️", "id": "Token amal terlezat di Robinhood Chain. Diluncurkan dengan Bankr — pendapatan kreator didonasikan secara transparan di linimasa. 🍔❤️"}, "lang_name": {"en": "English", "es": "Español", "zh": "中文", "ja": "日本語", "ko": "한국어", "pt": "Português", "fr": "Français", "ru": "Русский", "tr": "Türkçe", "vi": "Tiếng Việt", "hi": "हिन्दी", "de": "Deutsch", "id": "Bahasa Indonesia"}, "p_eyebrow_base": {"en": "Building together &middot; On Base", "es": "Construyendo juntos &middot; En Base", "zh": "共同构建 &middot; 在 Base 上", "ja": "共に築く &middot; Base 上で", "ko": "함께 만들어갑니다 &middot; Base에서", "pt": "Construindo juntos &middot; Na Base", "fr": "Construire ensemble &middot; Sur Base", "ru": "Строим вместе &middot; На Base", "tr": "Birlikte inşa ediyoruz &middot; Base üzerinde", "vi": "Cùng nhau xây dựng &middot; Trên Base", "hi": "साथ मिलकर निर्माण &middot; Base पर", "de": "Gemeinsam bauen &middot; Auf Base", "id": "Membangun bersama &middot; Di Base"}, "p_eyebrow_rh": {"en": "Building together &middot; On Robinhood Chain", "es": "Construyendo juntos &middot; En Robinhood Chain", "zh": "共同构建 &middot; 在 Robinhood Chain 上", "ja": "共に築く &middot; Robinhood Chain 上で", "ko": "함께 만들어갑니다 &middot; Robinhood Chain에서", "pt": "Construindo juntos &middot; Na Robinhood Chain", "fr": "Construire ensemble &middot; Sur Robinhood Chain", "ru": "Строим вместе &middot; На Robinhood Chain", "tr": "Birlikte inşa ediyoruz &middot; Robinhood Chain üzerinde", "vi": "Cùng nhau xây dựng &middot; Trên Robinhood Chain", "hi": "साथ मिलकर निर्माण &middot; Robinhood Chain पर", "de": "Gemeinsam bauen &middot; Auf Robinhood Chain", "id": "Membangun bersama &middot; Di Robinhood Chain"}, "p_title": {"en": "Our <span class=\"title-accent\">partners.</span>", "es": "Nuestros <span class=\"title-accent\">socios.</span>", "zh": "我们的<span class=\"title-accent\">合作伙伴。</span>", "ja": "私たちの<span class=\"title-accent\">パートナー。</span>", "ko": "우리의 <span class=\"title-accent\">파트너.</span>", "pt": "Nossos <span class=\"title-accent\">parceiros.</span>", "fr": "Nos <span class=\"title-accent\">partenaires.</span>", "ru": "Наши <span class=\"title-accent\">партнёры.</span>", "tr": "<span class=\"title-accent\">Ortaklarımız.</span>", "vi": "<span class=\"title-accent\">Đối tác</span> của chúng tôi.", "hi": "हमारे <span class=\"title-accent\">साझेदार।</span>", "de": "Unsere <span class=\"title-accent\">Partner.</span>", "id": "<span class=\"title-accent\">Mitra</span> kami."}, "p_sub_base": {"en": "The projects, platforms, and communities helping $BURGERS feed the hungry on Base. We're proud of what we build with each of them.", "es": "Los proyectos, plataformas y comunidades que ayudan a $BURGERS a alimentar a quien lo necesita en Base. Estamos orgullosos de lo que construimos con cada uno de ellos.", "zh": "在 Base 上帮助 $BURGERS 为饥饿者供餐的项目、平台与社区。我们为与他们共同打造的一切感到自豪。", "ja": "Base 上で $BURGERS が飢えた人々を支える取り組みを助けてくれるプロジェクト、プラットフォーム、コミュニティ。私たちは彼ら一つひとつと築いてきたものを誇りに思っています。", "ko": "Base에서 $BURGERS가 굶주린 이들을 돕도록 함께하는 프로젝트, 플랫폼, 커뮤니티입니다. 그들 각각과 함께 만들어온 것을 자랑스럽게 생각합니다.", "pt": "Os projetos, plataformas e comunidades que ajudam o $BURGERS a alimentar quem tem fome na Base. Temos orgulho do que construímos com cada um deles.", "fr": "Les projets, plateformes et communautés qui aident $BURGERS à nourrir les plus démunis sur Base. Nous sommes fiers de ce que nous bâtissons avec chacun d'eux.", "ru": "Проекты, платформы и сообщества, которые помогают $BURGERS кормить голодных на Base. Мы гордимся тем, что строим вместе с каждым из них.", "tr": "Base üzerinde $BURGERS'ın açları doyurmasına yardım eden projeler, platformlar ve topluluklar. Her biriyle birlikte inşa ettiklerimizle gurur duyuyoruz.", "vi": "Các dự án, nền tảng và cộng đồng giúp $BURGERS nuôi những người đói trên Base. Chúng tôi tự hào về những gì đã xây dựng cùng mỗi bên.", "hi": "वे परियोजनाएँ, प्लेटफ़ॉर्म और समुदाय जो Base पर $BURGERS को भूखों तक भोजन पहुँचाने में मदद करते हैं। हमें उनमें से हर एक के साथ बनाई गई चीज़ों पर गर्व है।", "de": "Die Projekte, Plattformen und Communities, die $BURGERS dabei helfen, auf Base Hungernde zu versorgen. Wir sind stolz auf das, was wir mit jedem von ihnen aufbauen.", "id": "Proyek, platform, dan komunitas yang membantu $BURGERS memberi makan yang lapar di Base. Kami bangga dengan apa yang kami bangun bersama masing-masing dari mereka."}, "p_sub_rh": {"en": "The projects, platforms, and communities helping $BURGERS feed the hungry on Robinhood Chain. This side of the family is just getting started.", "es": "Los proyectos, plataformas y comunidades que ayudan a $BURGERS a alimentar a quien lo necesita en Robinhood Chain. Este lado de la familia apenas está empezando.", "zh": "在 Robinhood Chain 上帮助 $BURGERS 为饥饿者供餐的项目、平台与社区。这一侧的大家庭才刚刚起步。", "ja": "Robinhood Chain 上で $BURGERS が飢えた人々を支える取り組みを助けてくれるプロジェクト、プラットフォーム、コミュニティ。こちら側の仲間はまだ始まったばかりです。", "ko": "Robinhood Chain에서 $BURGERS가 굶주린 이들을 돕도록 함께하는 프로젝트, 플랫폼, 커뮤니티입니다. 이쪽 가족은 이제 막 시작했습니다.", "pt": "Os projetos, plataformas e comunidades que ajudam o $BURGERS a alimentar quem tem fome na Robinhood Chain. Esse lado da família está apenas começando.", "fr": "Les projets, plateformes et communautés qui aident $BURGERS à nourrir les plus démunis sur Robinhood Chain. Ce côté de la famille ne fait que commencer.", "ru": "Проекты, платформы и сообщества, которые помогают $BURGERS кормить голодных на Robinhood Chain. Эта часть семьи только начинает свой путь.", "tr": "Robinhood Chain üzerinde $BURGERS'ın açları doyurmasına yardım eden projeler, platformlar ve topluluklar. Ailenin bu tarafı daha yeni başlıyor.", "vi": "Các dự án, nền tảng và cộng đồng giúp $BURGERS nuôi những người đói trên Robinhood Chain. Phía này của gia đình chỉ mới bắt đầu.", "hi": "वे परियोजनाएँ, प्लेटफ़ॉर्म और समुदाय जो Robinhood Chain पर $BURGERS को भूखों तक भोजन पहुँचाने में मदद करते हैं। परिवार का यह हिस्सा अभी शुरू ही हुआ है।", "de": "Die Projekte, Plattformen und Communities, die $BURGERS dabei helfen, auf Robinhood Chain Hungernde zu versorgen. Diese Seite der Familie fängt gerade erst an.", "id": "Proyek, platform, dan komunitas yang membantu $BURGERS memberi makan yang lapar di Robinhood Chain. Sisi keluarga ini baru saja dimulai."}, "p_tidy_tag": {"en": "Onchain community apps", "es": "Apps comunitarias onchain", "zh": "链上社区应用", "ja": "オンチェーンのコミュニティアプリ", "ko": "온체인 커뮤니티 앱", "pt": "Apps comunitários onchain", "fr": "Applications communautaires onchain", "ru": "Ончейн-приложения для сообществ", "tr": "Zincir üstü topluluk uygulamaları", "vi": "Ứng dụng cộng đồng onchain", "hi": "ऑनचेन कम्युनिटी ऐप्स", "de": "Onchain-Community-Apps", "id": "Aplikasi komunitas onchain"}, "p_tidy_desc": {"en": "Strong communities are the foundation of every successful business. TidyCoin builds the engaging, rewarding onchain applications that make them inevitable — Play. Burn. Stake. Govern. Earn. Their goal: be the partner of choice for any community using onchain systems to engage, grow, and reward their users.", "es": "Las comunidades fuertes son la base de todo negocio exitoso. TidyCoin crea las aplicaciones onchain atractivas y gratificantes que las hacen inevitables — Juega. Quema. Haz staking. Gobierna. Gana. Su objetivo: ser el socio preferido de cualquier comunidad que use sistemas onchain para atraer, crecer y recompensar a sus usuarios.", "zh": "强大的社区是每一项成功事业的基石。TidyCoin 打造引人入胜、回报丰厚的链上应用，让强社区成为必然 —— 游玩、销毁、质押、治理、赚取。他们的目标：成为每一个用链上系统吸引、成长并回馈用户的社区的首选合作伙伴。", "ja": "強いコミュニティはあらゆる成功するビジネスの土台です。TidyCoin は、それを必然にする魅力的で報われるオンチェーンアプリを構築しています —— 遊ぶ、燃やす、ステークする、統治する、稼ぐ。彼らの目標は、オンチェーンの仕組みでユーザーを惹きつけ、育て、報いるあらゆるコミュニティにとって第一の選択肢となることです。", "ko": "강한 커뮤니티는 모든 성공적인 사업의 토대입니다. TidyCoin은 그것을 필연으로 만드는 매력적이고 보상이 따르는 온체인 애플리케이션을 만듭니다 — 플레이, 소각, 스테이킹, 거버넌스, 수익. 그들의 목표는 온체인 시스템으로 사용자를 모으고 키우고 보상하는 모든 커뮤니티의 첫 번째 파트너가 되는 것입니다.", "pt": "Comunidades fortes são a base de todo negócio bem-sucedido. A TidyCoin constrói as aplicações onchain envolventes e recompensadoras que as tornam inevitáveis — Jogue. Queime. Faça stake. Governe. Ganhe. O objetivo deles: ser o parceiro preferido de qualquer comunidade que use sistemas onchain para engajar, crescer e recompensar seus usuários.", "fr": "Les communautés fortes sont le socle de toute entreprise qui réussit. TidyCoin construit les applications onchain engageantes et gratifiantes qui les rendent inévitables — Jouer. Brûler. Staker. Gouverner. Gagner. Leur objectif : devenir le partenaire de référence de toute communauté qui utilise des systèmes onchain pour mobiliser, faire grandir et récompenser ses utilisateurs.", "ru": "Сильные сообщества — основа любого успешного дела. TidyCoin создаёт увлекательные и вознаграждающие ончейн-приложения, которые делают такие сообщества неизбежными — играй, сжигай, стейкай, управляй, зарабатывай. Их цель — стать партнёром первого выбора для любого сообщества, использующего ончейн-системы, чтобы вовлекать, растить и вознаграждать своих пользователей.", "tr": "Güçlü topluluklar her başarılı işin temelidir. TidyCoin, bunu kaçınılmaz kılan ilgi çekici ve ödüllendirici zincir üstü uygulamalar geliştirir — Oyna. Yak. Stake et. Yönet. Kazan. Hedefleri: kullanıcılarını çekmek, büyütmek ve ödüllendirmek için zincir üstü sistemler kullanan her topluluğun tercih ettiği ortak olmak.", "vi": "Cộng đồng vững mạnh là nền tảng của mọi doanh nghiệp thành công. TidyCoin xây dựng những ứng dụng onchain hấp dẫn và đáng thưởng khiến điều đó trở thành tất yếu — Chơi. Đốt. Stake. Quản trị. Kiếm. Mục tiêu của họ: trở thành đối tác được lựa chọn của mọi cộng đồng dùng hệ thống onchain để thu hút, phát triển và tưởng thưởng người dùng.", "hi": "मज़बूत समुदाय हर सफल व्यवसाय की नींव होते हैं। TidyCoin ऐसे आकर्षक और पुरस्कृत करने वाले ऑनचेन ऐप्लिकेशन बनाता है जो उन्हें अपरिहार्य बना देते हैं — खेलें। बर्न करें। स्टेक करें। शासन करें। कमाएँ। उनका लक्ष्य: हर उस समुदाय की पसंदीदा साझेदार बनना जो अपने उपयोगकर्ताओं को जोड़ने, बढ़ाने और पुरस्कृत करने के लिए ऑनचेन प्रणालियों का उपयोग करता है।", "de": "Starke Communities sind das Fundament jedes erfolgreichen Unternehmens. TidyCoin baut die fesselnden, belohnenden Onchain-Anwendungen, die sie unvermeidlich machen — Spielen. Burnen. Staken. Regieren. Verdienen. Ihr Ziel: der bevorzugte Partner für jede Community zu sein, die Onchain-Systeme nutzt, um ihre Nutzer zu binden, wachsen zu lassen und zu belohnen.", "id": "Komunitas yang kuat adalah fondasi setiap bisnis yang sukses. TidyCoin membangun aplikasi onchain yang menarik dan memberi imbalan sehingga hal itu menjadi keniscayaan — Main. Bakar. Stake. Kelola. Hasilkan. Tujuan mereka: menjadi mitra pilihan bagi setiap komunitas yang memakai sistem onchain untuk melibatkan, menumbuhkan, dan memberi imbalan kepada penggunanya."}, "p_tidy_cta": {"en": "Visit TidyCoin →", "es": "Visitar TidyCoin →", "zh": "访问 TidyCoin →", "ja": "TidyCoin を見る →", "ko": "TidyCoin 방문 →", "pt": "Visitar TidyCoin →", "fr": "Visiter TidyCoin →", "ru": "Перейти к TidyCoin →", "tr": "TidyCoin'i ziyaret et →", "vi": "Ghé thăm TidyCoin →", "hi": "TidyCoin देखें →", "de": "TidyCoin besuchen →", "id": "Kunjungi TidyCoin →"}, "p_mft_tag": {"en": "Funding forests with memes", "es": "Financiando bosques con memes", "zh": "用迷因资助森林", "ja": "ミームで森を育てる", "ko": "밈으로 숲을 만듭니다", "pt": "Financiando florestas com memes", "fr": "Financer des forêts avec des mèmes", "ru": "Финансируем леса мемами", "tr": "Memelerle orman fonluyor", "vi": "Gây quỹ trồng rừng bằng meme", "hi": "मीम से जंगलों का वित्तपोषण", "de": "Wälder mit Memes finanzieren", "id": "Mendanai hutan dengan meme"}, "p_mft_desc": {"en": "Share memes on X to fund trees — <strong>no purchase necessary</strong>. If you'd rather buy something, they've also got tokens, NFTs, games, and music — every one of them helps fund forests in some way. Memes that turn viral attention into real-world reforestation.", "es": "Comparte memes en X para financiar árboles — <strong>sin necesidad de comprar nada</strong>. Si prefieres comprar algo, también tienen tokens, NFT, juegos y música — todos ellos ayudan a financiar bosques de alguna forma. Memes que convierten la atención viral en reforestación real.", "zh": "在 X 上分享迷因即可资助植树 —— <strong>无需任何购买</strong>。如果你更想买点什么，他们也有代币、NFT、游戏和音乐 —— 每一样都以某种方式帮助资助森林。让病毒式关注变成现实世界植树造林的迷因。", "ja": "X でミームをシェアするだけで植樹を支援できます —— <strong>購入は一切不要</strong>。何か買いたい場合は、トークン、NFT、ゲーム、音楽もあり、そのどれもが何らかの形で森づくりの資金になります。バイラルな注目を現実の森林再生に変えるミームです。", "ko": "X에 밈을 공유하면 나무 심기를 후원할 수 있습니다 — <strong>구매는 전혀 필요 없습니다</strong>. 무언가 사고 싶다면 토큰, NFT, 게임, 음악도 있으며 하나하나가 어떤 식으로든 숲 조성에 보탬이 됩니다. 바이럴한 관심을 실제 산림 복원으로 바꾸는 밈입니다.", "pt": "Compartilhe memes no X para financiar árvores — <strong>sem necessidade de compra</strong>. Se preferir comprar algo, eles também têm tokens, NFTs, jogos e música — cada um deles ajuda a financiar florestas de alguma forma. Memes que transformam atenção viral em reflorestamento real.", "fr": "Partagez des mèmes sur X pour financer des arbres — <strong>aucun achat nécessaire</strong>. Si vous préférez acheter quelque chose, ils proposent aussi des tokens, des NFT, des jeux et de la musique — chacun contribue d'une façon ou d'une autre à financer des forêts. Des mèmes qui transforment l'attention virale en reboisement bien réel.", "ru": "Делитесь мемами в X, чтобы финансировать посадку деревьев — <strong>покупка не требуется</strong>. Если всё же хочется что-то купить, у них есть токены, NFT, игры и музыка — каждое так или иначе помогает финансировать леса. Мемы, превращающие вирусное внимание в реальное восстановление лесов.", "tr": "Ağaçları fonlamak için X'te meme paylaşın — <strong>satın alma gerekmez</strong>. Bir şey satın almayı tercih ederseniz tokenleri, NFT'leri, oyunları ve müzikleri de var — her biri bir şekilde ormanları fonlamaya yardım ediyor. Viral ilgiyi gerçek dünyada ağaçlandırmaya dönüştüren memeler.", "vi": "Chia sẻ meme trên X để gây quỹ trồng cây — <strong>không cần mua gì cả</strong>. Nếu bạn muốn mua thứ gì đó, họ còn có token, NFT, trò chơi và âm nhạc — mỗi thứ đều góp phần gây quỹ cho rừng theo cách riêng. Những meme biến sự chú ý lan truyền thành việc tái trồng rừng thật sự.", "hi": "पेड़ों के लिए धन जुटाने हेतु X पर मीम साझा करें — <strong>कोई खरीद आवश्यक नहीं</strong>। अगर आप कुछ खरीदना चाहें, तो उनके पास टोकन, NFT, गेम और संगीत भी हैं — इनमें से हर एक किसी न किसी रूप में जंगलों के वित्तपोषण में मदद करता है। ऐसे मीम जो वायरल ध्यान को असली वनरोपण में बदल देते हैं।", "de": "Teile Memes auf X, um Bäume zu finanzieren — <strong>kein Kauf nötig</strong>. Wenn du lieber etwas kaufst: Es gibt auch Token, NFTs, Spiele und Musik — jedes davon hilft auf seine Weise, Wälder zu finanzieren. Memes, die virale Aufmerksamkeit in echte Aufforstung verwandeln.", "id": "Bagikan meme di X untuk mendanai pohon — <strong>tanpa perlu membeli apa pun</strong>. Kalau Anda lebih suka membeli sesuatu, mereka juga punya token, NFT, game, dan musik — semuanya membantu mendanai hutan dengan caranya masing-masing. Meme yang mengubah perhatian viral menjadi reboisasi nyata."}, "p_mft_cta": {"en": "Visit MemeForTrees →", "es": "Visitar MemeForTrees →", "zh": "访问 MemeForTrees →", "ja": "MemeForTrees を見る →", "ko": "MemeForTrees 방문 →", "pt": "Visitar MemeForTrees →", "fr": "Visiter MemeForTrees →", "ru": "Перейти к MemeForTrees →", "tr": "MemeForTrees'i ziyaret et →", "vi": "Ghé thăm MemeForTrees →", "hi": "MemeForTrees देखें →", "de": "MemeForTrees besuchen →", "id": "Kunjungi MemeForTrees →"}, "p_love_tag": {"en": "Sending love, onchain", "es": "Enviando amor, onchain", "zh": "在链上传递爱", "ja": "オンチェーンで愛を届ける", "ko": "온체인으로 사랑을 전합니다", "pt": "Enviando amor, onchain", "fr": "Envoyer de l'amour, onchain", "ru": "Отправляем любовь ончейн", "tr": "Zincir üstünde sevgi gönderiyor", "vi": "Gửi yêu thương, onchain", "hi": "ऑनचेन प्यार भेजना", "de": "Liebe senden, onchain", "id": "Mengirim cinta, onchain"}, "p_love_desc": {"en": "Spread love onchain. Send $LOVE to friends, family, or anyone you want to thank, encourage, or remind that they matter — a small digital gesture that says \"I support you. I care.\" Sometimes the most valuable thing you can give someone is the reminder that they're seen.", "es": "Difunde amor onchain. Envía $LOVE a amigos, familia o cualquiera a quien quieras agradecer, animar o recordarle que importa — un pequeño gesto digital que dice \"te apoyo, me importas\". A veces lo más valioso que puedes darle a alguien es recordarle que se le ve.", "zh": "在链上传播爱。把 $LOVE 送给朋友、家人，或任何你想感谢、鼓励、或提醒他们很重要的人 —— 一个小小的数字举动，传达\"我支持你，我在乎你\"。有时你能给一个人最珍贵的东西，就是让他知道自己被看见。", "ja": "オンチェーンで愛を広げましょう。友人や家族、あるいは感謝や励ましを伝えたい人、あなたにとって大切だと伝えたい人へ $LOVE を送れます —— 「応援している。大切に思っている」と伝える小さなデジタルの気持ちです。時に人に贈れる最も価値あるものは、あなたはちゃんと見られている、という実感かもしれません。", "ko": "온체인에서 사랑을 나누세요. 친구나 가족, 혹은 고맙다고, 힘내라고, 당신은 소중하다고 전하고 싶은 누구에게든 $LOVE를 보낼 수 있습니다 — \"응원하고 있어요. 마음 쓰고 있어요\"라고 말하는 작은 디지털 표현입니다. 때로는 누군가에게 줄 수 있는 가장 값진 것이 당신은 보이고 있다는 사실을 알려주는 일입니다.", "pt": "Espalhe amor onchain. Envie $LOVE para amigos, família ou qualquer pessoa a quem queira agradecer, encorajar ou lembrar que importa — um pequeno gesto digital que diz \"eu te apoio, eu me importo\". Às vezes a coisa mais valiosa que você pode dar a alguém é lembrá-la de que ela é vista.", "fr": "Répandez l'amour onchain. Envoyez des $LOVE à vos amis, votre famille ou à quiconque vous voulez remercier, encourager ou à qui rappeler qu'il compte — un petit geste numérique qui dit « je te soutiens, je tiens à toi ». Parfois, la chose la plus précieuse à offrir, c'est de rappeler à quelqu'un qu'il est vu.", "ru": "Дарите любовь ончейн. Отправьте $LOVE друзьям, близким или любому, кого хотите поблагодарить, поддержать или кому напомнить, что он важен — маленький цифровой жест, который говорит: «я рядом, мне не всё равно». Иногда самое ценное, что можно дать человеку, — напомнить, что его видят.", "tr": "Sevgiyi zincir üstünde yayın. Arkadaşlarınıza, ailenize ya da teşekkür etmek, yüreklendirmek veya değerli olduğunu hatırlatmak istediğiniz herkese $LOVE gönderin — \"yanındayım, önemsiyorum\" diyen küçük bir dijital jest. Bazen birine verebileceğiniz en değerli şey, görüldüğünü hatırlatmaktır.", "vi": "Lan tỏa yêu thương onchain. Gửi $LOVE cho bạn bè, gia đình, hay bất kỳ ai bạn muốn cảm ơn, động viên, hoặc nhắc rằng họ quan trọng — một cử chỉ số nhỏ bé nói rằng \"tôi ủng hộ bạn. Tôi quan tâm.\" Đôi khi điều quý giá nhất bạn có thể trao ai đó là lời nhắc rằng họ được nhìn thấy.", "hi": "ऑनचेन प्यार फैलाएँ। दोस्तों, परिवार, या किसी भी ऐसे व्यक्ति को $LOVE भेजें जिसे आप धन्यवाद देना, हौसला देना, या यह याद दिलाना चाहते हैं कि वे मायने रखते हैं — एक छोटा-सा डिजिटल इशारा जो कहता है \"मैं आपके साथ हूँ। मुझे परवाह है।\" कभी-कभी किसी को दी जा सकने वाली सबसे कीमती चीज़ यही याद दिलाना होता है कि उन्हें देखा जा रहा है।", "de": "Verbreite Liebe onchain. Schick $LOVE an Freunde, Familie oder jeden, dem du danken, Mut machen oder sagen willst, dass er zählt — eine kleine digitale Geste, die sagt: „Ich stehe hinter dir. Du bist mir wichtig.\" Manchmal ist das Wertvollste, was man jemandem geben kann, die Erinnerung daran, gesehen zu werden.", "id": "Sebarkan cinta onchain. Kirim $LOVE ke teman, keluarga, atau siapa pun yang ingin Anda beri terima kasih, semangat, atau diingatkan bahwa mereka berarti — sebuah gestur digital kecil yang berkata \"aku mendukungmu. Aku peduli.\" Kadang hal paling berharga yang bisa Anda berikan adalah mengingatkan seseorang bahwa ia terlihat."}, "p_love_cta": {"en": "Visit The Love Token →", "es": "Visitar The Love Token →", "zh": "访问 The Love Token →", "ja": "The Love Token を見る →", "ko": "The Love Token 방문 →", "pt": "Visitar The Love Token →", "fr": "Visiter The Love Token →", "ru": "Перейти к The Love Token →", "tr": "The Love Token'ı ziyaret et →", "vi": "Ghé thăm The Love Token →", "hi": "The Love Token देखें →", "de": "The Love Token besuchen →", "id": "Kunjungi The Love Token →"}, "p_xeno_tag": {"en": "Global UAP disclosure archive", "es": "Archivo global de divulgación UAP", "zh": "全球 UAP 披露档案库", "ja": "世界の UAP 開示アーカイブ", "ko": "글로벌 UAP 공개 아카이브", "pt": "Arquivo global de divulgação UAP", "fr": "Archive mondiale de divulgation UAP", "ru": "Глобальный архив раскрытия НЛО (UAP)", "tr": "Küresel UAP açıklama arşivi", "vi": "Kho lưu trữ công bố UAP toàn cầu", "hi": "वैश्विक UAP प्रकटीकरण संग्रह", "de": "Globales UAP-Offenlegungsarchiv", "id": "Arsip pengungkapan UAP global"}, "p_xeno_desc": {"en": "An open archive of humanity's documented encounters with the unexplained — verified government UAP/UFO releases from 20+ nations alongside tens of thousands of citizen and pilot sighting reports, all plotted on an interactive 3D globe and linked straight to the primary sources. $XENO is the token for the archive, live on Robinhood Chain.", "es": "Un archivo abierto de los encuentros documentados de la humanidad con lo inexplicable — publicaciones gubernamentales verificadas sobre UAP/OVNI de más de 20 países junto a decenas de miles de informes de avistamientos de ciudadanos y pilotos, todo representado en un globo 3D interactivo y enlazado directamente a las fuentes primarias. $XENO es el token del archivo, activo en Robinhood Chain.", "zh": "一个记录人类与未解现象接触的开放档案库 —— 汇集 20 多个国家经核实的官方 UAP/UFO 公开文件，以及数万份民众与飞行员的目击报告，全部标注在可交互的 3D 地球上，并直接链接至原始出处。$XENO 是该档案库的代币，已在 Robinhood Chain 上线。", "ja": "人類が記録してきた未解明現象との遭遇を集めたオープンアーカイブ —— 20 か国以上の政府による検証済み UAP/UFO 公開資料に加え、市民やパイロットによる数万件の目撃報告を、インタラクティブな 3D 地球儀上に配置し、一次資料へ直接リンクしています。$XENO はこのアーカイブのトークンで、Robinhood Chain 上で稼働中です。", "ko": "인류가 기록해 온 미확인 현상과의 조우를 모은 공개 아카이브입니다 — 20개국 이상의 검증된 정부 UAP/UFO 공개 자료와 함께 수만 건의 시민·조종사 목격 보고를 인터랙티브 3D 지구본 위에 표시하고 일차 자료로 바로 연결합니다. $XENO는 이 아카이브의 토큰으로, Robinhood Chain에서 운영 중입니다.", "pt": "Um arquivo aberto dos encontros documentados da humanidade com o inexplicável — divulgações governamentais verificadas de UAP/OVNI de mais de 20 países ao lado de dezenas de milhares de relatos de avistamentos de cidadãos e pilotos, tudo plotado em um globo 3D interativo e vinculado diretamente às fontes primárias. $XENO é o token do arquivo, ativo na Robinhood Chain.", "fr": "Une archive ouverte des rencontres documentées de l'humanité avec l'inexpliqué — des publications gouvernementales vérifiées sur les UAP/OVNI de plus de 20 pays, aux côtés de dizaines de milliers de signalements d'observations de citoyens et de pilotes, le tout cartographié sur un globe 3D interactif et relié directement aux sources primaires. $XENO est le token de l'archive, en ligne sur Robinhood Chain.", "ru": "Открытый архив задокументированных встреч человечества с необъяснимым — проверенные государственные публикации об НЛО/UAP более чем из 20 стран вместе с десятками тысяч сообщений о наблюдениях от граждан и пилотов, нанесённые на интерактивный 3D-глобус и связанные напрямую с первоисточниками. $XENO — токен этого архива, работает на Robinhood Chain.", "tr": "İnsanlığın açıklanamayanla yaşadığı belgelenmiş karşılaşmaların açık arşivi — 20'den fazla ülkeden doğrulanmış resmî UAP/UFO belgeleri ile on binlerce vatandaş ve pilot gözlem raporu, etkileşimli bir 3D küre üzerinde işaretleniyor ve doğrudan birincil kaynaklara bağlanıyor. $XENO bu arşivin tokeni ve Robinhood Chain üzerinde yayında.", "vi": "Một kho lưu trữ mở về những cuộc chạm trán được ghi nhận của nhân loại với điều chưa lý giải — các tài liệu UAP/UFO đã được xác minh do chính phủ hơn 20 quốc gia công bố, cùng hàng chục nghìn báo cáo nhìn thấy từ người dân và phi công, tất cả được đánh dấu trên quả địa cầu 3D tương tác và liên kết thẳng tới nguồn gốc. $XENO là token của kho lưu trữ này, đang hoạt động trên Robinhood Chain.", "hi": "अनसुलझी घटनाओं से मानवता की प्रलेखित मुठभेड़ों का एक खुला संग्रह — 20 से अधिक देशों की सत्यापित सरकारी UAP/UFO सामग्री के साथ नागरिकों और पायलटों की दसियों हज़ार दृश्य रिपोर्टें, सब कुछ एक इंटरैक्टिव 3D ग्लोब पर अंकित और सीधे मूल स्रोतों से जुड़ा हुआ। $XENO इस संग्रह का टोकन है, जो Robinhood Chain पर लाइव है।", "de": "Ein offenes Archiv der dokumentierten Begegnungen der Menschheit mit dem Unerklärlichen — verifizierte staatliche UAP/UFO-Veröffentlichungen aus über 20 Ländern, dazu Zehntausende Sichtungsberichte von Bürgern und Piloten, alles auf einem interaktiven 3D-Globus verortet und direkt mit den Primärquellen verlinkt. $XENO ist der Token des Archivs, live auf Robinhood Chain.", "id": "Arsip terbuka tentang perjumpaan manusia dengan hal yang tak terjelaskan — rilis UAP/UFO pemerintah terverifikasi dari lebih dari 20 negara bersama puluhan ribu laporan penampakan dari warga dan pilot, semuanya dipetakan di globe 3D interaktif dan ditautkan langsung ke sumber primer. $XENO adalah token untuk arsip ini, aktif di Robinhood Chain."}, "p_xeno_cta": {"en": "Visit Xeno →", "es": "Visitar Xeno →", "zh": "访问 Xeno →", "ja": "Xeno を見る →", "ko": "Xeno 방문 →", "pt": "Visitar Xeno →", "fr": "Visiter Xeno →", "ru": "Перейти к Xeno →", "tr": "Xeno'yu ziyaret et →", "vi": "Ghé thăm Xeno →", "hi": "Xeno देखें →", "de": "Xeno besuchen →", "id": "Kunjungi Xeno →"}, "p_cta_title": {"en": "Want to partner with $BURGERS?", "es": "¿Quieres asociarte con $BURGERS?", "zh": "想与 $BURGERS 合作吗？", "ja": "$BURGERS と組みませんか？", "ko": "$BURGERS와 파트너가 되고 싶으신가요?", "pt": "Quer ser parceiro do $BURGERS?", "fr": "Envie de devenir partenaire de $BURGERS ?", "ru": "Хотите стать партнёром $BURGERS?", "tr": "$BURGERS ile ortak olmak ister misiniz?", "vi": "Muốn hợp tác với $BURGERS?", "hi": "$BURGERS के साथ साझेदारी करना चाहते हैं?", "de": "Willst du Partner von $BURGERS werden?", "id": "Ingin bermitra dengan $BURGERS?"}, "p_cta_body": {"en": "If you're building something charity-aligned on Base — or want to integrate $BURGERS into your project — reach out. We love working with people who care about more than just price action.", "es": "Si estás construyendo algo con fines benéficos en Base — o quieres integrar $BURGERS en tu proyecto — escríbenos. Nos encanta trabajar con gente a la que le importa algo más que el precio.", "zh": "如果你正在 Base 上打造与慈善相关的东西 —— 或者想把 $BURGERS 整合进你的项目 —— 请联系我们。我们喜欢与那些在乎的不只是价格波动的人合作。", "ja": "Base 上でチャリティに根ざした何かを作っている方、あるいは $BURGERS をご自身のプロジェクトに組み込みたい方は、ぜひご連絡ください。私たちは、価格の動き以上のものを大切にする人たちと働くのが好きです。", "ko": "Base에서 자선과 맞닿은 무언가를 만들고 있거나 $BURGERS를 프로젝트에 통합하고 싶다면 연락 주세요. 우리는 가격 움직임 이상의 것을 소중히 여기는 사람들과 일하는 것을 좋아합니다.", "pt": "Se você está construindo algo alinhado à caridade na Base — ou quer integrar o $BURGERS ao seu projeto — fale com a gente. Adoramos trabalhar com quem se importa com mais do que apenas o preço.", "fr": "Si vous construisez un projet à vocation caritative sur Base — ou si vous souhaitez intégrer $BURGERS au vôtre — contactez-nous. Nous aimons travailler avec des gens qui s'intéressent à autre chose qu'à la seule courbe des prix.", "ru": "Если вы строите на Base что-то с благотворительной направленностью — или хотите интегрировать $BURGERS в свой проект — напишите нам. Нам нравится работать с людьми, которым важна не только цена.", "tr": "Base üzerinde hayır odaklı bir şey inşa ediyorsanız — ya da $BURGERS'ı projenize entegre etmek istiyorsanız — bize ulaşın. Yalnızca fiyat hareketinden fazlasını önemseyen insanlarla çalışmayı seviyoruz.", "vi": "Nếu bạn đang xây dựng điều gì đó gắn với từ thiện trên Base — hoặc muốn tích hợp $BURGERS vào dự án của mình — hãy liên hệ. Chúng tôi thích làm việc với những người quan tâm nhiều hơn là chỉ biến động giá.", "hi": "अगर आप Base पर परोपकार से जुड़ा कुछ बना रहे हैं — या $BURGERS को अपनी परियोजना में जोड़ना चाहते हैं — तो हमसे संपर्क करें। हमें उन लोगों के साथ काम करना पसंद है जिन्हें सिर्फ़ कीमत से ज़्यादा की परवाह है।", "de": "Wenn du auf Base etwas mit wohltätigem Bezug baust — oder $BURGERS in dein Projekt integrieren willst — melde dich. Wir arbeiten gern mit Menschen, denen mehr als nur der Kursverlauf am Herzen liegt.", "id": "Jika Anda sedang membangun sesuatu yang selaras dengan amal di Base — atau ingin mengintegrasikan $BURGERS ke proyek Anda — hubungi kami. Kami senang bekerja dengan orang yang peduli pada lebih dari sekadar pergerakan harga."}, "p_cta_x": {"en": "DM us on X →", "es": "Envíanos un DM en X →", "zh": "在 X 上私信我们 →", "ja": "X で DM を送る →", "ko": "X에서 DM 보내기 →", "pt": "Mande DM no X →", "fr": "Écrivez-nous en DM sur X →", "ru": "Напишите нам в X →", "tr": "X'ten DM gönderin →", "vi": "Nhắn tin cho chúng tôi trên X →", "hi": "X पर हमें DM करें →", "de": "Schreib uns eine DM auf X →", "id": "Kirim DM ke kami di X →"}, "p_cta_tg": {"en": "Find us on Telegram", "es": "Encuéntranos en Telegram", "zh": "在 Telegram 找到我们", "ja": "Telegram で見つける", "ko": "Telegram에서 찾기", "pt": "Encontre-nos no Telegram", "fr": "Retrouvez-nous sur Telegram", "ru": "Найдите нас в Telegram", "tr": "Bizi Telegram'da bulun", "vi": "Tìm chúng tôi trên Telegram", "hi": "हमें Telegram पर खोजें", "de": "Finde uns auf Telegram", "id": "Temukan kami di Telegram"}, "nav_takeover": {"en": "Takeover", "es": "Takeover", "zh": "Takeover", "ja": "Takeover", "ko": "Takeover", "pt": "Takeover", "fr": "Takeover", "ru": "Takeover", "tr": "Takeover", "vi": "Takeover", "hi": "Takeover", "de": "Takeover", "id": "Takeover"}, "foot_takeovergrid": {"en": "Takeover Grid", "es": "Cuadrícula Takeover", "zh": "Takeover 网格", "ja": "Takeover グリッド", "ko": "Takeover 그리드", "pt": "Grade Takeover", "fr": "Grille Takeover", "ru": "Сетка Takeover", "tr": "Takeover Izgarası", "vi": "Lưới Takeover", "hi": "Takeover ग्रिड", "de": "Takeover-Raster", "id": "Kisi Takeover"}, "foot_community": {"en": "Community", "es": "Comunidad", "zh": "社区", "ja": "コミュニティ", "ko": "커뮤니티", "pt": "Comunidade", "fr": "Communauté", "ru": "Сообщество", "tr": "Topluluk", "vi": "Cộng đồng", "hi": "समुदाय", "de": "Community", "id": "Komunitas"}, "meta_title_partners": {"en": "Partners — Burger Money ($BURGERS)", "es": "Socios — Burger Money ($BURGERS)", "zh": "合作伙伴 — Burger Money ($BURGERS)", "ja": "パートナー — Burger Money ($BURGERS)", "ko": "파트너 — Burger Money ($BURGERS)", "pt": "Parceiros — Burger Money ($BURGERS)", "fr": "Partenaires — Burger Money ($BURGERS)", "ru": "Партнёры — Burger Money ($BURGERS)", "tr": "Ortaklar — Burger Money ($BURGERS)", "vi": "Đối tác — Burger Money ($BURGERS)", "hi": "साझेदार — Burger Money ($BURGERS)", "de": "Partner — Burger Money ($BURGERS)", "id": "Mitra — Burger Money ($BURGERS)"}, "meta_desc_partners": {"en": "The projects, platforms, and communities partnering with $BURGERS to feed the hungry on Base and Robinhood Chain.", "es": "Los proyectos, plataformas y comunidades que se asocian con $BURGERS para alimentar a quien lo necesita en Base y Robinhood Chain.", "zh": "与 $BURGERS 合作、在 Base 和 Robinhood Chain 上为饥饿者供餐的项目、平台与社区。", "ja": "Base と Robinhood Chain 上で $BURGERS と共に飢えた人々を支えるプロジェクト、プラットフォーム、コミュニティ。", "ko": "Base와 Robinhood Chain에서 $BURGERS와 함께 굶주린 이들을 돕는 프로젝트, 플랫폼, 커뮤니티.", "pt": "Os projetos, plataformas e comunidades que fazem parceria com o $BURGERS para alimentar quem tem fome na Base e na Robinhood Chain.", "fr": "Les projets, plateformes et communautés partenaires de $BURGERS pour nourrir les plus démunis sur Base et Robinhood Chain.", "ru": "Проекты, платформы и сообщества, сотрудничающие с $BURGERS, чтобы кормить голодных на Base и Robinhood Chain.", "tr": "Base ve Robinhood Chain üzerinde açları doyurmak için $BURGERS ile ortaklık kuran projeler, platformlar ve topluluklar.", "vi": "Các dự án, nền tảng và cộng đồng hợp tác với $BURGERS để nuôi những người đói trên Base và Robinhood Chain.", "hi": "वे परियोजनाएँ, प्लेटफ़ॉर्म और समुदाय जो Base और Robinhood Chain पर भूखों को भोजन देने के लिए $BURGERS के साथ साझेदारी करते हैं।", "de": "Die Projekte, Plattformen und Communities, die mit $BURGERS zusammenarbeiten, um auf Base und Robinhood Chain Hungernde zu versorgen.", "id": "Proyek, platform, dan komunitas yang bermitra dengan $BURGERS untuk memberi makan yang lapar di Base dan Robinhood Chain."}}, HREF={"en": "en", "es": "es", "zh": "zh-Hans", "ja": "ja", "ko": "ko", "pt": "pt", "fr": "fr", "ru": "ru", "tr": "tr", "vi": "vi", "hi": "hi", "de": "de", "id": "id"}, OGL={"en": "en_US", "es": "es_ES", "zh": "zh_CN", "ja": "ja_JP", "ko": "ko_KR", "pt": "pt_BR", "fr": "fr_FR", "ru": "ru_RU", "tr": "tr_TR", "vi": "vi_VN", "hi": "hi_IN", "de": "de_DE", "id": "id_ID"}, LANGS=["en", "es", "zh", "ja", "ko", "pt", "fr", "ru", "tr", "vi", "hi", "de", "id"];
+  var BML=window.BMLang||null;
+  function t(k,l){var e=I18N[k];return e?(e[l]||e.en):null;}
+  function setMeta(attr,name,val){
+    if(val==null)return;
+    var el=document.head.querySelector('meta['+attr+'="'+name+'"]');
+    if(!el){el=document.createElement('meta');el.setAttribute(attr,name);document.head.appendChild(el);}
+    el.setAttribute('content',val);
+  }
+  function detect(){
+    if(BML)return BML.resolved||BML.detect();
+    var n=(navigator.languages&&navigator.languages.length)?navigator.languages:[navigator.language];
+    for(var i=0;i<n.length;i++){var v=String(n[i]||'').slice(0,2).toLowerCase();
+      if(LANGS.indexOf(v)>=0)return v;}
+    return 'en';
+  }
+  function apply(lang,push){
+    if(LANGS.indexOf(lang)<0)lang='en';
+    current=lang;            /* keep get() authoritative for any caller */
+    document.documentElement.setAttribute('lang',HREF[lang]||lang);
+    document.documentElement.setAttribute('data-lang',lang);
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var v=t(el.getAttribute('data-i18n'),lang);
+      if(v==null)return;
+      if(v.indexOf('<')>=0){el.innerHTML=v;}else{el.textContent=v;}
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+      var v=t(el.getAttribute('data-i18n-ph'),lang);
+      if(v!=null)el.setAttribute('placeholder',v);
+    });
+    var ttl=t('meta_title_partners',lang), dsc=t('meta_desc_partners',lang);
+    if(ttl)document.title=ttl;
+    setMeta('name','description',dsc);
+    setMeta('property','og:title',ttl);
+    setMeta('property','og:description',dsc);
+    setMeta('property','og:locale',OGL[lang]);
+    setMeta('name','twitter:title',ttl);
+    setMeta('name','twitter:description',dsc);
+    var sel=document.getElementById('langSelect');
+    if(sel&&sel.value!==lang)sel.value=lang;
+    if(push){
+      if(BML){BML.remember(lang);}else{try{localStorage.setItem('bm_lang_manual',lang);}catch(e){}}
+      try{
+        var u=new URL(location.href);
+        if(lang==='en'){u.searchParams.delete('lang');}else{u.searchParams.set('lang',lang);}
+        history.replaceState(null,'',u.toString());
+      }catch(e){}
+    }
+    document.dispatchEvent(new CustomEvent('bm:langchange',{detail:{lang:lang}}));
+  }
+  var current=detect(), wired=false;
+  function boot(){
+    apply(current,false);
+    var sel=document.getElementById('langSelect');
+    if(sel&&!wired){
+      wired=true; sel.value=current;
+      sel.addEventListener('change',function(){current=sel.value;apply(current,true);});
+    }
+  }
+  boot();
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}
+  window.BurgerI18n={apply:apply,get:function(){return current;},t:t,langs:LANGS};
+})();
+</script>
+
+<div id="bmLang">
+  <div id="bmLangPanel" role="menu" aria-label="Select language">
+    <div class="bml-head" aria-hidden="true">Language</div>
+    <button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="en" data-short="EN"><span class="bml-dot" aria-hidden="true"></span>English</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="es" data-short="ES"><span class="bml-dot" aria-hidden="true"></span>Español</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="zh" data-short="中"><span class="bml-dot" aria-hidden="true"></span>中文</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="ja" data-short="日"><span class="bml-dot" aria-hidden="true"></span>日本語</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="ko" data-short="한"><span class="bml-dot" aria-hidden="true"></span>한국어</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="pt" data-short="PT"><span class="bml-dot" aria-hidden="true"></span>Português</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="fr" data-short="FR"><span class="bml-dot" aria-hidden="true"></span>Français</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="ru" data-short="RU"><span class="bml-dot" aria-hidden="true"></span>Русский</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="tr" data-short="TR"><span class="bml-dot" aria-hidden="true"></span>Türkçe</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="vi" data-short="VI"><span class="bml-dot" aria-hidden="true"></span>Tiếng Việt</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="hi" data-short="हि"><span class="bml-dot" aria-hidden="true"></span>हिन्दी</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="de" data-short="DE"><span class="bml-dot" aria-hidden="true"></span>Deutsch</button><button type="button" class="bml-opt" role="menuitemradio" aria-checked="false" data-lang="id" data-short="ID"><span class="bml-dot" aria-hidden="true"></span>Indonesia</button>
+  </div>
+  <button id="bmLangBtn" type="button" aria-haspopup="true" aria-expanded="false"
+          aria-controls="bmLangPanel" aria-label="Change language"><svg class="bml-globe" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg><span class="bml-code" id="bmLangCode">EN</span><svg class="bml-caret" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+</div>
+
+<script>
+/* ---- Floating language switcher --------------------------------------
+   Drives the existing runtime through window.BurgerI18n.apply(); the
+   translation system itself is untouched.                            ---- */
+(function(){
+  var root=document.getElementById('bmLang'),
+      btn=document.getElementById('bmLangBtn'),
+      panel=document.getElementById('bmLangPanel'),
+      code=document.getElementById('bmLangCode');
+  if(!root||!btn||!panel||!code)return;
+  var opts=[].slice.call(panel.querySelectorAll('.bml-opt'));
+
+  function current(){
+    try{ if(window.BurgerI18n&&window.BurgerI18n.get)return window.BurgerI18n.get(); }catch(e){}
+    return document.documentElement.getAttribute('data-lang')||'en';
+  }
+  function sync(lang){
+    lang=lang||current();
+    opts.forEach(function(o){
+      var on=o.getAttribute('data-lang')===lang;
+      o.setAttribute('aria-checked',on?'true':'false');
+      if(on)code.textContent=o.getAttribute('data-short');
+    });
+  }
+  function open(){
+    root.classList.add('open');
+    btn.setAttribute('aria-expanded','true');
+    var on=panel.querySelector('.bml-opt[aria-checked="true"]')||opts[0];
+    if(on)on.focus();
+  }
+  function close(focus){
+    root.classList.remove('open');
+    btn.setAttribute('aria-expanded','false');
+    if(focus)btn.focus();
+  }
+  function isOpen(){return root.classList.contains('open');}
+
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    isOpen()?close(false):open();
+  });
+
+  panel.addEventListener('click',function(e){
+    var o=e.target.closest?e.target.closest('.bml-opt'):null;
+    if(!o)return;
+    e.stopPropagation();
+    var lang=o.getAttribute('data-lang');
+    try{
+      if(window.BurgerI18n&&window.BurgerI18n.apply)window.BurgerI18n.apply(lang,true);
+    }catch(err){}
+    sync(lang);
+    close(true);
+  });
+
+  document.addEventListener('click',function(e){
+    if(isOpen()&&!root.contains(e.target))close(false);
+  });
+
+  document.addEventListener('keydown',function(e){
+    if(!isOpen())return;
+    if(e.key==='Escape'){e.preventDefault();close(true);return;}
+    if(e.key!=='ArrowDown'&&e.key!=='ArrowUp'&&e.key!=='Home'&&e.key!=='End')return;
+    e.preventDefault();
+    var i=opts.indexOf(document.activeElement);
+    if(e.key==='Home')i=0;
+    else if(e.key==='End')i=opts.length-1;
+    else if(e.key==='ArrowDown')i=(i+1)%opts.length;
+    else i=(i-1+opts.length)%opts.length;
+    opts[i].focus();
+  });
+
+  /* stay in step if the language changes from anywhere else */
+  document.addEventListener('bm:langchange',function(e){
+    sync(e&&e.detail?e.detail.lang:null);
+  });
+
+  sync();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){sync();});
+})();
+</script>
 </body>
 </html>
