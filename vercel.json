@@ -1,0 +1,65 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-3eg2j6hQOB6i7NgzGylWXzgI1jOkfxAYuw5Jcxq5xUA=' 'sha256-5dFpWTb+DsfgORCVxaENK1Q6i/5UbCQtMH4ZDHaq2ns=' 'sha256-7UfBjWQXRRvqdctJJN4nHnwBrXyNr4TAQRf9eCRM11Q=' 'sha256-fhuI1jeDZcBMyVxtC9sP+bV2fQe1XIzr5y3dSG7k3Fk=' 'sha256-KQ6pEyUV0hiG+p5Ai3+52SUfU4qogcmAGLKVwJ9k0ms=' 'sha256-KWeHjJFUJEkNCsExIab8O/cKVSZzDPdKTiHXBL2uWTE=' 'sha256-l+ClLva8fgMOqpDO+X8vVYAffXx49dFpt7Ka9kPvN/g=' 'sha256-mkKnOnpBsJ49JWAIbrQ347xzJZNY9dA3HwSO75xYG48=' 'sha256-oqif597avnp+aVK26Hiu7rVGmJLbzw+JS/gXQvoT0no=' 'sha256-OyaUinzGfjdQ0JOX+AAN2KvDzmlkEJsoP/QzST8CVag=' 'sha256-s00bl7FhnY0aDOqShWnZJQ9GZ9Lx4dEZfNNcooVnv9k=' 'sha256-VsVTayStIZieqtE6bP1RTHcNdtwkFvpqyfKnUW+A7zY=' 'sha256-WuLOhK8RfrqaSzXnT1BIq7ZkCJE8yF2OlKdGMokMbLI=' https://cdn.jsdelivr.net; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.dexscreener.com https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base.drpc.org; frame-src https://www.geckoterminal.com; frame-ancestors 'self' https://farcaster.xyz https://*.farcaster.xyz https://warpcast.com https://*.warpcast.com https://base.app https://*.base.app https://base.dev https://*.base.dev https://coinbase.com https://*.coinbase.com; form-action 'self'; manifest-src 'self'; media-src 'none'; worker-src 'none'; upgrade-insecure-requests"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Origin-Agent-Cluster",
+          "value": "?1"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Permitted-Cross-Domain-Policies",
+          "value": "none"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(jpg|jpeg|png|svg|webp)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
+    },
+    {
+      "source": "/design-overhaul.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        }
+      ]
+    }
+  ]
+}

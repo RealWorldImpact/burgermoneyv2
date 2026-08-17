@@ -1,10 +1,10 @@
 {
-  "_comment": "Farcaster Mini App manifest for burgermoney.org. This file is served from /.well-known/farcaster.json. The accountAssociation block is a JSON Farcaster Signature (JFS) proving the project's Farcaster account controls this domain. To generate yours, sign in at https://farcaster.xyz/~/developers/mini-apps/manifest with the Farcaster account you want associated with this Mini App, enter the domain 'burgermoney.org', and paste the three returned values (header, payload, signature) into the accountAssociation object below. Until you do this, the Mini App will work for casting/sharing but cannot be 'added' by users, send notifications, or appear in the Mini App store.",
+  "_comment": "Farcaster Mini App manifest for burgermoney.org. The signed accountAssociation below proves that the project's Farcaster account controls this domain.",
 
   "accountAssociation": {
-    "header": "REPLACE_WITH_SIGNED_HEADER_FROM_FARCASTER_DEV_TOOLS",
-    "payload": "REPLACE_WITH_SIGNED_PAYLOAD_FROM_FARCASTER_DEV_TOOLS",
-    "signature": "REPLACE_WITH_SIGNATURE_FROM_FARCASTER_DEV_TOOLS"
+    "header": "eyJmaWQiOjEyMTgwMzYsInR5cGUiOiJhdXRoIiwia2V5IjoiMHgxQmJjY0NFYTBGMzI5QjBCMDM4OTY1NTg4NmE4NkI1MTcyZjdiODRhIn0",
+    "payload": "eyJkb21haW4iOiJidXJnZXJtb25leS5vcmcifQ",
+    "signature": "BIby32+vHd6fjTyCGJLBZoIQgicu0d6ztUNOwBSHsph5HmVrWa6+r9aPbSuJ+COgy47EeUs1/BE7qbMoVHkT1Bw="
   },
 
   "miniapp": {
@@ -15,12 +15,12 @@
     "splashImageUrl": "https://www.burgermoney.org/splash-200.png",
     "splashBackgroundColor": "#0241FF",
     "subtitle": "Memecoin that feeds the hungry",
-    "description": "A charity-first memecoin on Base. Every trade, every Takeover tile, every Uniswap LP fee funds verified hunger-relief donations and onchain $BURGERS buyback-and-burn.",
+    "description": "A charity first memecoin on Base. Every trade, every Takeover tile, every Uniswap LP fee funds verified hunger relief donations and onchain buybacks and burns.",
     "primaryCategory": "social",
     "tags": ["charity", "memecoin", "base", "defi", "donations"],
     "heroImageUrl": "https://www.burgermoney.org/og-burgers.png",
     "tagline": "Feeding the hungry, onchain",
-    "ogTitle": "Burger Money ($BURGERS)",
+    "ogTitle": "Burger Money",
     "ogDescription": "A charity-first memecoin on Base — all revenue funds hunger relief and buyback-and-burn.",
     "ogImageUrl": "https://www.burgermoney.org/og-burgers.png"
   }

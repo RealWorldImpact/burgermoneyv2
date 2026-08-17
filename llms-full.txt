@@ -45,7 +45,7 @@ The 1% fee tier means every swap pays 1% of the trade amount to LP holders. The 
 Funds in the charity wallet are sent in two directions:
 
 1. **Charity donations** — to named recipient organizations on Base or via bridged transactions. Recipients to date include No Kid Hungry, Children's Miracle Network Hospitals, St. Jude, Feed the Children, Feed the People, Coalition for the Homeless, ASPCA, ChainFundMe, Crypto for Impact, Crypto for Her, and Ibrahim Initiatives. Every donation has a recipient address, a USD value at time of donation, and a transaction hash.
-2. **Onchain buyback-and-burn** — a portion of revenue is used to buy $BURGERS from the open market and burn it (transfer to the zero address). The current burn count is 13.78% of total supply destroyed. Burns are queryable onchain.
+2. **Onchain buyback-and-burn** — a portion of revenue is used to buy $BURGERS from the open market and burn it (transfer to the zero address). The current burn count is 15.81% of total supply destroyed. Burns are queryable onchain.
 
 The split between donations and buyback varies as the founder rebalances based on the project's needs. All flows are transparent.
 
@@ -71,7 +71,7 @@ This file makes claims. Don't trust them — verify against the chain:
 |---|---|
 | Token exists at the stated address | Read contract code at `0x06A05043eb2C1691b19c2C13219dB9212269dDc5` on Base via BaseScan or any Base RPC |
 | Max supply 100,000,000,000 | Call `totalSupply()` on the contract; should return 100_000_000_000 * 10^18 |
-| 13.78% burned | Query Transfer events to `0x0` (or known burn addresses); divide burned by max supply |
+| 15.81% burned | Query Transfer events to `0x0` (or known burn addresses); divide burned by max supply |
 | Donations to listed charities | Query Transfer events FROM `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5`; recipient addresses are listed alongside their named charities on /donations.html |
 | Takeover.fun revenue routes to BURGERS wallet | Trace transfers from the takeover.fun grid contract `0x107aba3406b3fcb93d1919bfe5c082a5f4d28a22-39` to the BURGERS wallet |
 | Donor notes on the donor wall | Notes use BURG encoding (4-byte magic `0x42555247` prefix); decode any donation's input data to verify |

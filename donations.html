@@ -857,8 +857,9 @@
   #bmLangBtn:hover{transform:none}
 }
 </style>
+<link rel="stylesheet" href="design-overhaul.css">
 </head>
-<body>
+<body class="page-donations">
 <!-- Machine-readable token data for AI agents. Mirrors /.well-known/token.json. -->
 <script type="application/json" id="token-data">
 {
@@ -917,7 +918,7 @@
         </div>
         <div class="trust-row">
           <div class="ti"><span class="n" id="heroDonated">$6,113</span><span class="l">Donated to feed people</span></div>
-          <div class="ti"><span class="n" id="heroBurned">13.78%</span><span class="l">Of supply burned</span></div>
+          <div class="ti"><span class="n" id="heroBurned">15.81%</span><span class="l">Of supply burned</span></div>
         </div>
       </div>
 
@@ -1739,6 +1740,12 @@
 
 <script>
 const CA = "0x06A05043eb2C1691b19c2C13219dB9212269dDc5";
+async function fetchWithTimeout(url,options,timeoutMs){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs||10000);
+  try{return await fetch(url,Object.assign({},options,{signal:controller.signal}));}
+  finally{clearTimeout(timer);}
+}
 function fmtPrice(p){p=Number(p);if(!isFinite(p)||p<=0)return "$0.00";if(p>=1)return "$"+p.toLocaleString(undefined,{maximumFractionDigits:4});return "$"+p.toFixed(12).replace(/0+$/,"");}
 function fmtUSD(n){n=Number(n);if(!isFinite(n))return "—";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+n.toFixed(0);}
 function paintTicker(s){
@@ -1758,7 +1765,7 @@ function paintTicker(s){
 async function loadPrice(){
   const tkChange=document.getElementById('tkChange');
   try{
-    const res=await fetch("https://api.dexscreener.com/latest/dex/tokens/"+CA);
+    const res=await fetchWithTimeout("https://api.dexscreener.com/latest/dex/tokens/"+CA);
     const data=await res.json();
     if(!data.pairs||!data.pairs.length)throw 0;
     const pair=data.pairs.filter(p=>p.chainId==="base").sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0))[0]||data.pairs[0];
@@ -1782,11 +1789,11 @@ function balanceOfData(addr){
   return "0x70a08231000000000000000000000000" + addr.toLowerCase().replace(/^0x/,"");
 }
 async function rpcCall(rpc, to, data){
-  const res = await fetch(rpc,{
+  const res = await fetchWithTimeout(rpc,{
     method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",
       params:[{to:to,data:data},"latest"]})
-  });
+  },10000);
   const j = await res.json();
   if(j && j.result && j.result !== "0x") return j.result;
   throw new Error("bad rpc result");
@@ -1813,7 +1820,7 @@ async function loadBurn(){
       return; // success — stop trying further RPCs
     }catch(e){ /* try next RPC */ }
   }
-  // all RPCs failed: leave the static 13.78% fallback already in the HTML
+  // all RPCs failed: leave the latest verified static fallback in the HTML
 }
 loadBurn();setInterval(loadBurn,120000); // refresh every 2 min
 
@@ -1888,14 +1895,12 @@ computeDonationTotal();
   // every scan out to a minute+. Staying just under 10k means the first try
   // succeeds, no halving needed.
   const CHUNK            = 9500;
-  // Fast phase: scan flat-out for this long after page load. After that the
-  // backfill does NOT stop — it drops into a throttled "trickle" (one parallel
-  // batch per TRICKLE_PAUSE_MS) that keeps digging while the tab stays open,
-  // until the project-start floor is reached. Progress persists after every
-  // batch, so partial sessions still accumulate across visits.
-  const FAST_PHASE_MS     = 40 * 1000;
-  const TRICKLE_PAUSE_MS  = 900;
-  const MAX_INIT_CHUNKS   = 5000;                 // absolute per-visit safety cap
+  // Keep the donor wall friendly to public RPC infrastructure. A short initial
+  // pass is followed by a slow, bounded backfill; progress persists so later
+  // visits continue where the previous one stopped.
+  const FAST_PHASE_MS     = 6 * 1000;
+  const TRICKLE_PAUSE_MS  = 5000;
+  const MAX_INIT_CHUNKS   = 120;                  // absolute per-visit safety cap
   // Hard floor for the backfill: the project launch date. No donation to the
   // project can predate the project itself. The matching block number is
   // resolved EXACTLY at runtime by binary-searching block timestamps — never
@@ -1905,7 +1910,7 @@ computeDonationTotal();
   const FLOOR_CACHE_KEY   = 'burgers:donorwall:floorblock:v1';
   // How many chunks to fetch concurrently during backfill. Requests round-robin
   // across the RPC pool so no single endpoint eats all of them.
-  const BACKFILL_PARALLEL = 6;
+  const BACKFILL_PARALLEL = 2;
   const RPC_TIMEOUT_MS   = 12 * 1000;             // per-RPC request timeout (also used by rpc())
 
   /* ----- helpers ----- */
@@ -2635,11 +2640,26 @@ computeDonationTotal();
     }
   }
 
-  // Defer to idle so the wall doesn't compete with hero/price loaders.
-  if('requestIdleCallback' in window){
-    requestIdleCallback(loadWall, {timeout: 2200});
-  } else {
-    setTimeout(loadWall, 700);
+  // The wall is far below the fold. Start its RPC work only when a visitor is
+  // approaching it, so a normal page load does not scan chain history.
+  const wallSection=document.getElementById('donor-wall');
+  let wallStarted=false;
+  function startWall(){
+    if(wallStarted)return;
+    wallStarted=true;
+    if('requestIdleCallback' in window)requestIdleCallback(loadWall,{timeout:1200});
+    else setTimeout(loadWall,150);
+  }
+  if(wallSection&&'IntersectionObserver' in window){
+    const wallObserver=new IntersectionObserver(entries=>{
+      if(entries.some(entry=>entry.isIntersecting)){
+        wallObserver.disconnect();
+        startWall();
+      }
+    },{rootMargin:'700px 0px'});
+    wallObserver.observe(wallSection);
+  }else{
+    window.addEventListener('load',startWall,{once:true});
   }
 })();
 document.getElementById('copyCA')&&document.getElementById('copyCA').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(CA);const i=document.getElementById('caCopied');i.textContent="✅";setTimeout(()=>i.textContent="📋",1600);}catch(e){}});
@@ -2727,15 +2747,28 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 })();
 </script>
 
-<script type="module">
-  // Farcaster Mini App SDK — dismisses the splash screen when the app loads
-  // inside a Farcaster host (Warpcast, Base App, Coinbase Wallet). Gracefully
-  // no-ops in regular browsers, so safe to include on every page.
-  import('https://esm.sh/@farcaster/miniapp-sdk').then(({ sdk }) => {
-    if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-      sdk.actions.ready().catch(() => {});
+<script>
+  // Only Mini App hosts need this SDK. Keep it off the regular website path,
+  // pin the dependency, and wait until the page is fully loaded.
+  (function(){
+    let embedded=false;
+    try{embedded=window.self!==window.top;}catch(e){embedded=true;}
+    if(!embedded)return;
+    function loadMiniAppSdk(){
+      const script=document.createElement('script');
+      script.src='https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.3.0/dist/index.min.js';
+      script.async=true;
+      script.crossOrigin='anonymous';
+      script.referrerPolicy='no-referrer';
+      script.onload=function(){
+        const sdk=window.miniapp&&window.miniapp.sdk;
+        if(sdk&&sdk.actions&&typeof sdk.actions.ready==='function')sdk.actions.ready().catch(function(){});
+      };
+      document.head.appendChild(script);
     }
-  }).catch(() => {});
+    if(document.readyState==='complete')loadMiniAppSdk();
+    else window.addEventListener('load',loadMiniAppSdk,{once:true});
+  })();
 </script>
 
 

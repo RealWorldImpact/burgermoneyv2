@@ -1,12 +1,11 @@
 {
-  "_comment": "Farcaster Mini App manifest for burgermoney.org. This file is served from /.well-known/farcaster.json. The accountAssociation block is a JSON Farcaster Signature (JFS) proving the project's Farcaster account controls this domain. To generate yours, sign in at https://farcaster.xyz/~/developers/mini-apps/manifest with the Farcaster account you want associated with this Mini App, enter the domain 'burgermoney.org', and paste the three returned values (header, payload, signature) into the accountAssociation object below. Until you do this, the Mini App will work for casting/sharing but cannot be 'added' by users, send notifications, or appear in the Mini App store.",
+  "_comment": "Farcaster Mini App manifest for burgermoney.org. The signed accountAssociation below proves that the project's Farcaster account controls this domain.",
 
   "accountAssociation": {
     "header": "eyJmaWQiOjEyMTgwMzYsInR5cGUiOiJhdXRoIiwia2V5IjoiMHgxQmJjY0NFYTBGMzI5QjBCMDM4OTY1NTg4NmE4NkI1MTcyZjdiODRhIn0",
     "payload": "eyJkb21haW4iOiJidXJnZXJtb25leS5vcmcifQ",
     "signature": "BIby32+vHd6fjTyCGJLBZoIQgicu0d6ztUNOwBSHsph5HmVrWa6+r9aPbSuJ+COgy47EeUs1/BE7qbMoVHkT1Bw="
   },
-
 
   "miniapp": {
     "version": "1",

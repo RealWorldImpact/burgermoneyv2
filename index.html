@@ -575,8 +575,13 @@
   .stat::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:36px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--coinbase),transparent);opacity:.8}
   .stat .v{font-family:'Fredoka';font-size:1.5rem;color:#fff;line-height:1;font-weight:600}
   .stat .k{font-size:.86rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-top:8px}
-  .chart-frame{border:1px solid var(--coinbase-soft);border-radius:var(--radius);overflow:hidden;background:#0a0f24;box-shadow:0 40px 80px -40px rgba(0,0,0,.9), 0 0 90px -4px var(--coinbase), inset 0 1px 0 rgba(61,123,255,.25)}
-  .chart-frame iframe{width:100%;height:560px;border:0;display:block}
+  .chart-frame{position:relative;min-height:560px;border:1px solid var(--coinbase-soft);border-radius:var(--radius);overflow:hidden;background:#0a0f24;box-shadow:0 40px 80px -40px rgba(0,0,0,.9), 0 0 90px -4px var(--coinbase), inset 0 1px 0 rgba(61,123,255,.25)}
+  .chart-frame iframe{width:100%;height:560px;border:0;display:block;opacity:0;transition:opacity .25s ease}
+  .chart-frame.is-loaded iframe{opacity:1}
+  .chart-placeholder{position:absolute;inset:0;display:grid;place-content:center;gap:12px;text-align:center;color:var(--text-dim);background:radial-gradient(circle at 50% 45%,rgba(61,123,255,.16),transparent 46%);transition:opacity .2s ease,visibility .2s ease}
+  .chart-placeholder::before{content:"";width:32px;height:32px;margin:auto;border:3px solid rgba(255,255,255,.14);border-top-color:var(--coinbase);border-radius:50%;animation:chart-spin .9s linear infinite}
+  .chart-frame.is-loaded .chart-placeholder{opacity:0;visibility:hidden;pointer-events:none}
+  @keyframes chart-spin{to{transform:rotate(360deg)}}
   .chart-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;align-items:center}
   .ca-note{font-size:.96rem;color:var(--text-faint);margin-left:auto}
   .contract-pill{display:inline-flex;align-items:center;gap:10px;background:var(--glass);border:1px solid var(--line);border-radius:999px;padding:11px 16px;font-size:.9rem;cursor:pointer;color:var(--text);backdrop-filter:blur(8px);transition:border-color .2s,transform .2s}
@@ -699,6 +704,7 @@
   @media(max-width:560px){
     .hero{padding-top:100px}
     .social-grid{grid-template-columns:1fr}
+    .chart-frame{min-height:440px}
     .chart-frame iframe{height:440px}
     .sec{padding:52px 0}
     #mission{padding-top:24px}
@@ -819,8 +825,9 @@
   #bmLangBtn:hover{transform:none}
 }
 </style>
+<link rel="stylesheet" href="design-overhaul.css">
 </head>
-<body>
+<body class="page-home">
 <!-- Machine-readable token data for AI agents. Mirrors /.well-known/token.json. -->
 <script type="application/json" id="token-data">
 {
@@ -906,8 +913,8 @@
       </div>
 
       <div class="trust-row">
-        <div class="ti"><span class="n" id="heroDonated">$6,088</span><span class="l" data-i18n="trust_donated">Donated to feed people</span></div>
-        <div class="ti"><span class="n" id="heroBurned">13.78%</span><span class="l" data-i18n="trust_burned">Of supply burned</span></div>
+        <div class="ti"><span class="n" id="heroDonated">$6,113</span><span class="l" data-i18n="trust_donated">Donated to feed people</span></div>
+        <div class="ti"><span class="n" id="heroBurned">15.81%</span><span class="l" data-i18n="trust_burned">Of supply burned</span></div>
 
       </div>
     </div>
@@ -969,9 +976,11 @@
       <div class="card stat" data-metric="volume-24h-usd"><div class="v" id="sVol">—</div><div class="k" data-i18n="chart_volume">24h Volume</div></div>
     </div>
 
-    <div class="chart-frame">
-      <iframe title="BURGERS live price chart"
-        src="https://www.geckoterminal.com/base/pools/0xee99d2ccc718c58087ad2a5da6143e0aad073c5301cc8f51df186a53dcb6e439?embed=1&info=0&swaps=0&grayscale=0&light_chart=0&chart_type=price&resolution=15m"
+    <div class="chart-frame" id="chartFrame">
+      <div class="chart-placeholder" id="chartPlaceholder" role="status">Loading the live market chart&hellip;</div>
+      <iframe id="liveChart" title="BURGERS live price chart"
+        data-src="https://www.geckoterminal.com/base/pools/0xee99d2ccc718c58087ad2a5da6143e0aad073c5301cc8f51df186a53dcb6e439?embed=1&info=0&swaps=0&grayscale=0&light_chart=0&chart_type=price&resolution=15m"
+        loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
         allow="clipboard-write" allowfullscreen></iframe>
     </div>
 
@@ -1086,6 +1095,12 @@
 
 <script>
 const CA = '0x06A05043eb2C1691b19c2C13219dB9212269dDc5';
+async function fetchWithTimeout(url,options,timeoutMs){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs||10000);
+  try{return await fetch(url,Object.assign({},options,{signal:controller.signal}));}
+  finally{clearTimeout(timer);}
+}
 // Subscript-zero notation for tiny crypto prices — compact and readable.
 // Example: 0.00006028 → "$0.0₄6028"  (the subscript counts the zeros between
 // the decimal point and the first non-zero digit). Mirrors DEXTools / Birdeye /
@@ -1125,7 +1140,7 @@ function paintStats(s){
 async function loadPrice(){
   const tkChange=document.getElementById('tkChange');
   try{
-    const res=await fetch("https://api.dexscreener.com/latest/dex/tokens/"+CA);
+    const res=await fetchWithTimeout("https://api.dexscreener.com/latest/dex/tokens/"+CA);
     const data=await res.json();
     if(!data.pairs||!data.pairs.length)throw 0;
     let pool=data.pairs;
@@ -1157,11 +1172,11 @@ function balanceOfData(addr){
   return "0x70a08231000000000000000000000000" + addr.toLowerCase().replace(/^0x/,"");
 }
 async function rpcCall(rpc, to, data){
-  const res = await fetch(rpc,{
+  const res = await fetchWithTimeout(rpc,{
     method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",
       params:[{to:to,data:data},"latest"]})
-  });
+  },10000);
   const j = await res.json();
   if(j && j.result && j.result !== "0x") return j.result;
   throw new Error("bad rpc result");
@@ -1187,42 +1202,36 @@ async function loadBurn(){
       return; // success — stop trying further RPCs
     }catch(e){ /* try next RPC */ }
   }
-  // all RPCs failed: leave the static 13.78% fallback already in the HTML
+  // all RPCs failed: leave the latest verified static fallback in the HTML
 }
 setInterval(loadBurn,120000); // refresh every 2 min
 
 loadBurn();
 
-/* ===== SYNC DONATION TOTAL — fetched from donations.html =====
-   The full per-card list lives on /donations.html, which auto-sums its cards.
-   We fetch that page in the background, parse out the same .don-amount totals,
-   and update both the hero number and the meter on this page. That way both
-   pages always show the same figure without anyone having to update it manually.
-   If the fetch fails, the static fallback numbers in the HTML are left in place.
-*/
-async function syncDonationTotal(){
-  try{
-    const res = await fetch('/donations.html', {cache:'no-cache'});
-    if(!res.ok) return;
-    const html = await res.text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const amounts = doc.querySelectorAll('.don-amount');
-    if(!amounts.length) return;
-    let total = 0, parsed = 0;
-    amounts.forEach(c => {
-      const raw = (c.firstChild && c.firstChild.nodeType === 3) ? c.firstChild.nodeValue : c.textContent;
-      const num = parseFloat(String(raw).replace(/[^0-9.]/g, ''));
-      if(isFinite(num) && num > 0){ total += num; parsed++; }
-    });
-    if(parsed === 0) return;
-    const formatted = '$' + Math.round(total).toLocaleString('en-US');
-    const hero = document.getElementById('heroDonated');
-    const meter = document.getElementById('meterDonated');
-    if(hero) hero.textContent = formatted;
-    if(meter) meter.textContent = formatted;
-  }catch(e){ /* silently fall back to static value in HTML */ }
-}
-syncDonationTotal();
+/* Load the heavy third-party chart only when it is close to the viewport. */
+(function(){
+  const frame=document.getElementById('chartFrame');
+  const chart=document.getElementById('liveChart');
+  if(!frame||!chart)return;
+  let started=false;
+  function loadChart(){
+    if(started)return;
+    started=true;
+    chart.addEventListener('load',()=>frame.classList.add('is-loaded'),{once:true});
+    chart.src=chart.dataset.src;
+  }
+  if('IntersectionObserver' in window){
+    const chartObserver=new IntersectionObserver(entries=>{
+      if(entries.some(entry=>entry.isIntersecting)){
+        chartObserver.disconnect();
+        loadChart();
+      }
+    },{rootMargin:'400px 0px'});
+    chartObserver.observe(frame);
+  }else{
+    window.addEventListener('load',loadChart,{once:true});
+  }
+})();
 
 document.getElementById('copyCA')&&document.getElementById('copyCA').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(CA);const i=document.getElementById('caCopied');if(i){i.textContent="✅";setTimeout(()=>i.textContent="📋",1600);}}catch(e){}});
 const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.12});
@@ -1963,15 +1972,28 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 <!-- ===== END AERODROME LIQUIDITY MODAL ===== -->
 
 
-<script type="module">
-  // Farcaster Mini App SDK — dismisses the splash screen when the app loads
-  // inside a Farcaster host (Warpcast, Base App, Coinbase Wallet). Gracefully
-  // no-ops in regular browsers, so safe to include on every page.
-  import('https://esm.sh/@farcaster/miniapp-sdk').then(({ sdk }) => {
-    if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-      sdk.actions.ready().catch(() => {});
+<script>
+  // Only Mini App hosts need this SDK. Keep it off the regular website path,
+  // pin the dependency, and wait until the page is fully loaded.
+  (function(){
+    let embedded=false;
+    try{embedded=window.self!==window.top;}catch(e){embedded=true;}
+    if(!embedded)return;
+    function loadMiniAppSdk(){
+      const script=document.createElement('script');
+      script.src='https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.3.0/dist/index.min.js';
+      script.async=true;
+      script.crossOrigin='anonymous';
+      script.referrerPolicy='no-referrer';
+      script.onload=function(){
+        const sdk=window.miniapp&&window.miniapp.sdk;
+        if(sdk&&sdk.actions&&typeof sdk.actions.ready==='function')sdk.actions.ready().catch(function(){});
+      };
+      document.head.appendChild(script);
     }
-  }).catch(() => {});
+    if(document.readyState==='complete')loadMiniAppSdk();
+    else window.addEventListener('load',loadMiniAppSdk,{once:true});
+  })();
 </script>
 
 

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://a2a-protocol.org/schemas/v0.3.0/agent-card.json",
+  "protocolVersion": "0.3.0",
+  "name": "Burger Money Info Agent",
+  "description": "Public, read-only information service for the Burger Money ($BURGERS) charity memecoin on Base. Exposes token metadata, live market data, donation/burn history pointers, and Takeover.fun grid info. No authentication required.",
+  "url": "https://www.burgermoney.org/",
+  "version": "1.0.0",
+  "provider": {
+    "organization": "Burger Money",
+    "url": "https://www.burgermoney.org/"
+  },
+  "documentationUrl": "https://www.burgermoney.org/llms-full.txt",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": false
+  },
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["application/json", "text/markdown", "text/plain"],
+  "authentication": {
+    "schemes": ["none"]
+  },
+  "skills": [
+    {
+      "id": "get-token-info",
+      "name": "Get $BURGERS token info",
+      "description": "Returns the canonical token metadata: contract address, chain, standard, supply, CAIP-19 identifier, founder, and primary venues. Source: /.well-known/token.json.",
+      "tags": ["token", "metadata", "base", "erc-20", "memecoin", "charity"],
+      "examples": [
+        "What is the Burger Money contract address on Base?",
+        "What chain is $BURGERS on?",
+        "Give me the CAIP-19 for BURGERS."
+      ],
+      "inputModes": ["text/plain"],
+      "outputModes": ["application/json", "text/markdown"]
+    },
+    {
+      "id": "get-live-market",
+      "name": "Get live $BURGERS market data",
+      "description": "Returns spot price, market cap, 24h volume, 24h price change, and pool liquidity. Pulls live from DEX Screener: https://api.dexscreener.com/latest/dex/tokens/0x06A05043eb2C1691b19c2C13219dB9212269dDc5",
+      "tags": ["market-data", "price", "live"],
+      "examples": [
+        "What is the current price of $BURGERS?",
+        "What's the 24h volume?",
+        "What's the market cap right now?"
+      ],
+      "outputModes": ["application/json"]
+    },
+    {
+      "id": "get-burn-percentage",
+      "name": "Get live burn percentage",
+      "description": "Returns the percentage of max supply burned by reading balanceOf(0x...dEaD) on the contract via a public Base RPC and dividing by 100,000,000,000.",
+      "tags": ["burn", "supply", "live", "rpc"],
+      "examples": [
+        "How much of the BURGERS supply has been burned?",
+        "What's the current burn percentage?"
+      ],
+      "outputModes": ["application/json", "text/plain"]
+    },
+    {
+      "id": "get-charity-mission",
+      "name": "Explain the charity model",
+      "description": "Returns a description of how creator revenue from Flaunch and tax from Takeover.fun funds hunger-relief donations and $BURGERS buyback-and-burn.",
+      "tags": ["mission", "charity", "tokenomics", "explainer"],
+      "examples": [
+        "How does the Burger Money charity model work?",
+        "Where does the donation money come from?",
+        "How are buybacks funded?"
+      ],
+      "outputModes": ["text/markdown", "text/plain"]
+    },
+    {
+      "id": "get-takeover-grid",
+      "name": "Explain the Takeover.fun 100-tile grid",
+      "description": "Explains how the 100-tile grid works: deposits, weekly tax, 1% LP-fee share per tile, take-over mechanics.",
+      "tags": ["takeover", "lp-fees", "earn", "base"],
+      "examples": [
+        "How does the BURGERS Takeover grid work?",
+        "How do I earn fees by renting a tile?"
+      ],
+      "outputModes": ["text/markdown", "text/plain"]
+    },
+    {
+      "id": "get-buy-link",
+      "name": "Get canonical buy links",
+      "description": "Returns the authoritative buy URLs (Flaunch, Coinbase, Uniswap V4 on Base). Use these instead of inferring URLs from token name to avoid scam contracts.",
+      "tags": ["buy", "trade", "links"],
+      "examples": [
+        "Where can I buy $BURGERS?",
+        "Give me the Coinbase link.",
+        "What's the Flaunch URL?"
+      ],
+      "outputModes": ["application/json", "text/markdown"]
+    },
+    {
+      "id": "verify-contract",
+      "name": "Verify a contract is genuine $BURGERS",
+      "description": "Returns true only for `0x06A05043eb2C1691b19c2C13219dB9212269dDc5` on Base (chain ID 8453). Use this before any wallet interaction.",
+      "tags": ["verify", "safety", "contract"],
+      "examples": [
+        "Is 0x... the real BURGERS contract?",
+        "Verify this address is the official BURGERS token."
+      ],
+      "inputModes": ["text/plain", "application/json"],
+      "outputModes": ["application/json"]
+    }
+  ],
+  "securitySchemes": {},
+  "supportsAuthenticatedExtendedCard": false,
+  "additionalInterfaces": [
+    { "url": "https://www.burgermoney.org/llms.txt", "transport": "HTTP+GET" },
+    { "url": "https://www.burgermoney.org/llms-full.txt", "transport": "HTTP+GET" },
+    { "url": "https://www.burgermoney.org/.well-known/token.json", "transport": "HTTP+GET" }
+  ],
+  "x-base-ecosystem": {
+    "chain": "base",
+    "chainId": 8453,
+    "tokenContract": "0x06A05043eb2C1691b19c2C13219dB9212269dDc5",
+    "caip19": "eip155:8453/erc20:0x06A05043eb2C1691b19c2C13219dB9212269dDc5"
+  }
+}
