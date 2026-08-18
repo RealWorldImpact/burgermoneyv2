@@ -27,6 +27,44 @@ body::after{
 
 html{scroll-padding-top:96px}
 
+/* A slim, ingredient-coloured progress line gives every page a shared sense
+   of motion without competing with the content. The pointer glow is added by
+   site-effects.js only for precise pointers and is intentionally very soft. */
+.scroll-relish{
+  position:fixed;
+  z-index:1000;
+  top:0;
+  left:0;
+  width:100%;
+  height:4px;
+  pointer-events:none;
+  background:linear-gradient(90deg,var(--pickle) 0 28%,var(--mustard) 28% 56%,var(--ketchup) 56% 78%,#315fe6 78% 100%);
+  box-shadow:0 0 14px rgba(185,242,39,.42);
+  transform:scaleX(var(--scroll-progress,0));
+  transform-origin:left center;
+  will-change:transform;
+}
+
+.flavor-glow{
+  position:fixed;
+  z-index:0;
+  top:0;
+  left:0;
+  width:560px;
+  height:560px;
+  pointer-events:none;
+  opacity:0;
+  background:
+    radial-gradient(circle at 42% 40%,rgba(185,242,39,.10),transparent 54%),
+    radial-gradient(circle at 64% 62%,rgba(49,95,230,.075),transparent 68%);
+  mix-blend-mode:screen;
+  transform:translate3d(calc(var(--pointer-x,50vw) - 280px),calc(var(--pointer-y,30vh) - 280px),0);
+  transition:opacity .28s ease;
+  will-change:transform,opacity;
+  contain:strict;
+}
+.flavor-glow.is-active{opacity:1}
+
 header.nav{
   top:12px;
   left:clamp(10px,2vw,28px);
@@ -40,7 +78,7 @@ header.nav{
 
 header.nav .wrap{max-width:1440px}
 .brand .bt{letter-spacing:-.045em}
-.nav-buttons>.btn-coinbase{display:none}
+.nav-buttons>.btn-coinbase{display:inline-flex}
 
 /* One header system for every page. Secondary pages previously collapsed at
    laptop widths, leaving an almost-empty bar; keep the full nav until it no
@@ -447,6 +485,8 @@ header.nav .wrap{max-width:1440px}
 }
 
 @media(prefers-reduced-motion:reduce){
+  .scroll-relish{will-change:auto}
+  .flavor-glow{display:none}
   .burger-stage{animation:none!important}
   .founder-photo img{transition:none!important}
   .founder-wrap:hover .founder-photo img{transform:none!important}
