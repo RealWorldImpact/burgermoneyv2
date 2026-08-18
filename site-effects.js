@@ -40,6 +40,7 @@
     impact.classList.add('impact-animated');
     if(!reducedMotion.matches){
       animateImpactNumber(document.getElementById('heroDonated'));
+      animateImpactNumber(document.getElementById('heroBurned'));
     }
   }
   if(impact){
