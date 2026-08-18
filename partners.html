@@ -700,54 +700,6 @@
     .hero-proof-grid{max-width:none}
   }
 
-  /* ====== Donor wall — gallery of onchain notes from USDC donors ====== */
-  .wall-intro-extra{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.92rem;color:var(--text-faint);margin-top:14px;margin-bottom:30px;font-weight:300}
-  .wall-intro-extra strong{color:var(--text-dim);font-weight:500}
-  .wall-intro-extra a{color:var(--bun-light);font-weight:600;border-bottom:1px solid rgba(244,173,60,.3);transition:color .2s}
-  .wall-intro-extra a:hover{color:#fff}
-  .wall-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-top:8px}
-  .wall-card{position:relative;padding:18px 18px 14px;background:var(--glass);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;gap:11px;transition:border-color .25s,transform .2s,box-shadow .25s;overflow:hidden}
-  .wall-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--green-up),#159362);border-radius:3px 0 0 3px;opacity:.55;transition:opacity .25s}
-  .wall-card:hover{border-color:rgba(35,209,139,.35);transform:translateY(-2px);box-shadow:0 22px 50px -22px rgba(0,0,0,.65),0 0 26px -10px rgba(35,209,139,.22)}
-  .wall-card:hover::before{opacity:1}
-  .wall-card-head{display:flex;align-items:center;gap:10px;justify-content:space-between;min-height:24px}
-  .wall-card-donor{font-family:'Fredoka';font-size:.98rem;color:#fff;font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;display:block;max-width:100%}
-  .wall-card-donor.is-anon{color:var(--text-faint);font-style:italic;font-weight:500}
-  .wall-card-donor-group{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;overflow:hidden}
-  .wall-card-basename{font-family:'JetBrains Mono','SF Mono',monospace;font-size:.74rem;color:#80a8ff;font-weight:500;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.01em;display:block;max-width:100%}
-  .wall-card-basename::before{content:'\25C6';color:#5e8eff;font-size:.72em;margin-right:5px;vertical-align:middle;opacity:.85}
-  /* Reverse-resolved Base name (donor didn't choose a name; we found one onchain). */
-  .wall-card-amount{font-family:'Fredoka';font-size:.84rem;font-weight:700;color:var(--green-up);background:rgba(35,209,139,.1);padding:3px 10px;border-radius:99px;border:1px solid rgba(35,209,139,.25);white-space:nowrap;letter-spacing:.01em;flex:0 0 auto}
-  .wall-card-note{font-size:.96rem;color:var(--text);line-height:1.55;font-weight:300;flex:1;word-break:break-word;white-space:pre-wrap}
-  .wall-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:9px;border-top:1px dashed rgba(255,255,255,.08)}
-  .wall-card-date{font-family:'Fredoka';font-size:.78rem;color:var(--text-faint);font-weight:500;letter-spacing:.01em}
-  .wall-card-tx{display:inline-flex;align-items:center;gap:5px;font-family:'Fredoka';font-size:.78rem;color:var(--coinbase-soft);font-weight:600;transition:color .2s,gap .2s}
-  .wall-card-tx:hover{color:#7ba0ff;gap:8px}
-  .wall-status{margin-top:22px;font-size:.9rem;color:var(--text-faint);text-align:center;font-weight:300;letter-spacing:.01em}
-  .wall-status.is-error{color:var(--red-down)}
-  .wall-empty{grid-column:1/-1;padding:44px 28px;text-align:center;border:1px dashed rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.02)}
-  .wall-empty-icon{font-size:2.2rem;margin-bottom:10px;display:block;opacity:.7}
-  .wall-empty h3{font-size:1.18rem;color:#fff;margin-bottom:10px;font-weight:600}
-  .wall-empty p{font-size:.94rem;color:var(--text-dim);font-weight:300;max-width:460px;margin:0 auto;line-height:1.6}
-  .wall-empty .btn{margin-top:22px}
-  .wall-skeleton{padding:18px;background:var(--glass);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;gap:12px;min-height:160px;position:relative;overflow:hidden}
-  .wall-skeleton-line{height:11px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.09),rgba(255,255,255,.04));background-size:200% 100%;border-radius:6px;animation:wall-shimmer 1.6s infinite}
-  .wall-skeleton-line.short{width:42%}
-  .wall-skeleton-line.med{width:68%}
-  .wall-skeleton-line.tall{height:34px;border-radius:8px}
-  @keyframes wall-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  @media(max-width:560px){
-    .wall-grid{grid-template-columns:1fr;gap:12px}
-    .wall-card{padding:14px 16px 12px;gap:10px}
-    .wall-card-donor{font-size:.92rem}
-    .wall-card-amount{font-size:.78rem;padding:2px 8px}
-    .wall-card-note{font-size:.92rem;padding-left:16px}
-    .wall-card-note::before{font-size:1.7rem}
-    .wall-empty{padding:32px 20px}
-    .wall-empty h3{font-size:1.05rem}
-    .wall-empty p{font-size:.88rem}
-    .wall-intro-extra{margin-top:10px;margin-bottom:24px;font-size:.86rem}
-  }
   /* ====== Partners page ====== */
   /* language picker */
 .lang-wrap{padding:0 7px 0 6px;gap:4px}
@@ -1161,7 +1113,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     document.querySelectorAll('[data-i18n]').forEach(function(el){
       var v=t(el.getAttribute('data-i18n'),lang);
       if(v==null)return;
-      if(v.indexOf('<')>=0){el.innerHTML=v;}else{el.textContent=v;}
+      el.innerHTML=v;
     });
     document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
       var v=t(el.getAttribute('data-i18n-ph'),lang);
