@@ -29,7 +29,7 @@ html{scroll-padding-top:96px}
 
 /* A slim, ingredient-coloured progress line gives every page a shared sense
    of motion without competing with the content. The pointer glow is added by
-   site-effects.js only for precise pointers and is intentionally very soft. */
+   site-effects.js only for precise pointers. */
 .scroll-relish{
   position:fixed;
   z-index:1000;
@@ -50,20 +50,23 @@ html{scroll-padding-top:96px}
   z-index:0;
   top:0;
   left:0;
-  width:560px;
-  height:560px;
+  width:640px;
+  height:640px;
+  border-radius:50%;
   pointer-events:none;
   opacity:0;
   background:
-    radial-gradient(circle at 42% 40%,rgba(185,242,39,.10),transparent 54%),
-    radial-gradient(circle at 64% 62%,rgba(49,95,230,.075),transparent 68%);
+    radial-gradient(circle at 39% 39%,rgba(185,242,39,.19),rgba(185,242,39,.09) 24%,transparent 58%),
+    radial-gradient(circle at 63% 62%,rgba(49,95,230,.15),rgba(49,95,230,.07) 30%,transparent 63%);
+  -webkit-mask-image:radial-gradient(circle,#000 0 48%,rgba(0,0,0,.88) 59%,transparent 76%);
+  mask-image:radial-gradient(circle,#000 0 48%,rgba(0,0,0,.88) 59%,transparent 76%);
   mix-blend-mode:screen;
-  transform:translate3d(calc(var(--pointer-x,50vw) - 280px),calc(var(--pointer-y,30vh) - 280px),0);
+  transform:translate3d(calc(var(--pointer-x,50vw) - 320px),calc(var(--pointer-y,30vh) - 320px),0);
   transition:opacity .28s ease;
   will-change:transform,opacity;
   contain:strict;
 }
-.flavor-glow.is-active{opacity:1}
+.flavor-glow.is-active{opacity:.96}
 
 header.nav{
   top:12px;
@@ -79,6 +82,7 @@ header.nav{
 header.nav .wrap{max-width:1440px}
 .brand .bt{letter-spacing:-.045em}
 .nav-buttons>.btn-coinbase{display:inline-flex}
+header.nav .nav-buttons>.btn-sm{box-sizing:border-box;min-height:44px}
 
 /* One header system for every page. Secondary pages previously collapsed at
    laptop widths, leaving an almost-empty bar; keep the full nav until it no
@@ -128,8 +132,9 @@ header.nav .wrap{max-width:1440px}
 }
 
 @media(min-width:1181px) and (max-width:1340px){
-  header.nav .nav-buttons .btn-flaunch{padding-inline:13px}
+  header.nav .nav-buttons>.btn-sm{width:44px;height:44px;padding:0}
   header.nav .nav-buttons .btn-flaunch .btn-label{display:none}
+  header.nav .nav-buttons>.btn-sm .btn-logo{margin:0}
 }
 
 @media(max-width:1180px){
@@ -181,7 +186,7 @@ header.nav .wrap{max-width:1440px}
   header.nav .nav-buttons .nav-links a{display:block;padding:10px 12px;border-radius:9px;color:var(--text)}
   header.nav .nav-buttons .nav-links a:hover{background:rgba(255,255,255,.07)}
   header.nav .nav-buttons .nav-links a::after{display:none}
-  header.nav .nav-buttons .btn-sm{width:100%;justify-content:flex-start;padding:11px 16px}
+  header.nav .nav-buttons .btn-sm{width:100%;min-height:46px;justify-content:flex-start;padding:11px 16px}
   header.nav .nav-buttons .btn-sm .btn-label{display:inline}
 }
 
