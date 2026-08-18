@@ -50,17 +50,17 @@ html{scroll-padding-top:96px}
   pointer-events:none;
   opacity:0;
   background:
-    radial-gradient(circle at 39% 39%,rgba(185,242,39,.15),rgba(185,242,39,.065) 25%,transparent 59%),
-    radial-gradient(circle at 63% 62%,rgba(49,95,230,.12),rgba(49,95,230,.05) 31%,transparent 64%);
-  -webkit-mask-image:radial-gradient(circle,rgba(0,0,0,.16) 0 5%,rgba(0,0,0,.5) 13%,#000 31%,rgba(0,0,0,.86) 58%,transparent 77%);
-  mask-image:radial-gradient(circle,rgba(0,0,0,.16) 0 5%,rgba(0,0,0,.5) 13%,#000 31%,rgba(0,0,0,.86) 58%,transparent 77%);
+    radial-gradient(circle at 40% 40%,rgba(185,242,39,.09) 0,rgba(185,242,39,.055) 34%,transparent 74%),
+    radial-gradient(circle at 62% 62%,rgba(49,95,230,.075) 0,rgba(49,95,230,.045) 36%,transparent 76%);
+  -webkit-mask-image:radial-gradient(circle,#000 0 57%,rgba(0,0,0,.78) 68%,rgba(0,0,0,.28) 78%,transparent 84%);
+  mask-image:radial-gradient(circle,#000 0 57%,rgba(0,0,0,.78) 68%,rgba(0,0,0,.28) 78%,transparent 84%);
   mix-blend-mode:screen;
   transform:translate3d(calc(var(--pointer-x,50vw) - 320px),calc(var(--pointer-y,30vh) - 320px),0);
   transition:opacity .28s ease;
   will-change:transform,opacity;
   contain:strict;
 }
-.flavor-glow.is-active{opacity:.9}
+.flavor-glow.is-active{opacity:.84}
 
 .flavor-trail{
   --trail-alpha:.09;
