@@ -6,7 +6,7 @@
   if(!body)return;
 
   var reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  var impact=document.querySelector('.page-home .impact-proof');
+  var impact=document.querySelector('.impact-metrics');
   function animateImpactNumber(element){
     if(!element||element.dataset.counted==='true')return;
     var raw=element.textContent.trim();

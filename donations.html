@@ -786,7 +786,7 @@
   #bmLangBtn:hover{transform:none}
 }
 </style>
-<link rel="stylesheet" href="design-overhaul.css?v=20260818i">
+<link rel="stylesheet" href="design-overhaul.css?v=20260818j">
 </head>
 <body class="page-donations">
 <!-- Machine-readable token data for AI agents. Mirrors /.well-known/token.json. -->
@@ -842,9 +842,15 @@
           <a class="btn btn-primary btn-donate" href="/#donate" data-action="open-donate"><svg class="btn-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="100" cy="100" r="100" fill="#2775CA"/><path fill="#fff" d="M127.5 117.5c0-13.333-7.917-17.917-23.75-20-11.333-1.667-13.667-5-13.667-10.833 0-5.833 4.167-9.583 12.5-9.583 7.5 0 11.667 2.5 13.75 8.75.417 1.25 1.667 2.083 2.917 2.083h6.667c1.667 0 2.917-1.25 2.917-2.917v-.417c-1.667-9.167-9.167-16.25-18.75-17.083v-10c0-1.667-1.25-2.917-3.333-3.333h-6.25c-1.667 0-2.917 1.25-3.333 3.333v9.583c-11.333 1.667-18.417 9.167-18.417 18.583 0 12.667 7.917 17.667 23.75 19.75 10.583 2.083 14 4.167 14 10.833s-5.833 11.25-13.583 11.25c-10.417 0-13.833-4.417-15.083-10.417-.417-1.667-1.667-2.5-2.917-2.5h-7.083c-1.667 0-2.917 1.25-2.917 2.917v.417c1.667 10.417 8.417 17.917 21.083 20.417v10c0 1.667 1.25 2.917 3.333 3.333h6.25c1.667 0 2.917-1.25 3.333-3.333v-10c11.75-2.083 18.583-10 18.583-20.833z"/><path fill="#fff" d="M83.333 159.583C53.333 148.75 37.917 115.417 49.167 85.833 55 69.583 67.917 56.667 83.333 51.25c1.583-.833 2.417-2.083 2.417-4.167V41.25c0-1.667-.833-2.917-2.417-3.333-.417 0-1.25 0-1.667.417C44.917 50 24.917 89.167 36.583 125.917 43.417 147.5 60.083 164.167 81.667 171c1.667.833 3.25 0 3.667-1.667.417-.417.417-.833.417-1.667v-5.833c0-1.25-1.167-2.667-2.417-2.25zM118.333 38.333c-1.667-.833-3.25 0-3.667 1.667-.417.417-.417.833-.417 1.667V47.5c0 1.25 1.167 2.667 2.417 3.083 30 10.833 45.417 44.167 34.167 73.75-5.833 16.25-18.75 29.167-34.167 34.583-1.583.833-2.417 2.083-2.417 4.167v5.833c0 1.667.833 2.917 2.417 3.333.417 0 1.25 0 1.667-.417C155.083 160.167 175.083 121 163.417 84.25 156.583 62.5 139.75 45.833 118.333 38.333z"/></svg>Donate USDC</a>
 
         </div>
-        <div class="trust-row">
-          <div class="ti"><span class="n" id="heroDonated">$6,113</span><span class="l">Donated to feed people</span></div>
-          <div class="ti"><span class="n" id="heroBurned">15.81%</span><span class="l">Of supply burned</span></div>
+        <div class="trust-row impact-metrics" aria-label="Burger Money impact to date">
+          <div class="ti ti-donated">
+            <span class="ti-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+            <span class="ti-copy"><span class="n" id="heroDonated">$6,113</span><span class="l" data-i18n="trust_donated">Donated to feed people</span></span>
+          </div>
+          <div class="ti ti-burned">
+            <span class="ti-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4.2 0 7-3.1 7-7.1 0-3.2-1.8-6.2-5.5-9.9.2 2.5-.7 4.1-2 5.2-.5-2.6-2.1-4.7-4.3-6.2.2 3.5-2.2 5.2-2.2 9.6C5 18.4 7.9 22 12 22Z"/><path d="M9.5 17.2c0 2 1 3.4 2.6 4.5 1.6-1.2 2.5-2.6 2.5-4.4 0-1.3-.6-2.5-1.8-3.8-.1 1.3-.7 2.1-1.3 2.7-.3-1.2-.9-2.2-1.8-3-.1 1.5-.2 2.5-.2 4Z"/></svg></span>
+            <span class="ti-copy"><span class="n" id="heroBurned">15.81%</span><span class="l" data-i18n="trust_burned">Of supply burned</span></span>
+          </div>
         </div>
       </div>
 
@@ -2094,6 +2100,6 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){sync();});
 })();
 </script>
-<script src="/site-effects.js?v=20260818i" defer></script>
+<script src="/site-effects.js?v=20260818j" defer></script>
 </body>
 </html>
