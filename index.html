@@ -784,7 +784,7 @@
   #bmLangBtn:hover{transform:none}
 }
 </style>
-<link rel="stylesheet" href="design-overhaul.css?v=20260818t">
+<link rel="stylesheet" href="design-overhaul.css?v=20260818u">
 </head>
 <body class="page-home">
 <!-- Machine-readable token data for AI agents. Mirrors /.well-known/token.json. -->
@@ -1110,8 +1110,13 @@ function paintStats(s){
   if(c!==undefined&&c!==null&&isFinite(Number(c))){
     const v=Number(c),txt=(v>=0?"+":"")+v.toFixed(2)+"%";
     tkChange.textContent=txt;tkChange.className="tk-change "+(v>=0?"up":"down");
-    const sc=document.getElementById('sChange');sc.textContent=txt;sc.style.color=v>=0?"var(--green-up)":"var(--red-down)";
-  }else{tkChange.textContent="—";tkChange.className="tk-change";}
+    const sc=document.getElementById('sChange'),changeCard=sc.closest('.stat');
+    sc.textContent=txt;sc.style.color=v>=0?"var(--green-up)":"var(--red-down)";
+    changeCard.classList.toggle('is-negative',v<0);
+  }else{
+    tkChange.textContent="—";tkChange.className="tk-change";
+    document.getElementById('sChange')?.closest('.stat')?.classList.remove('is-negative');
+  }
 }
 async function loadPrice(){
   const tkChange=document.getElementById('tkChange');
