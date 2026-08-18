@@ -1873,6 +1873,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     function loadMiniAppSdk(){
       const script=document.createElement('script');
       script.src='https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.3.0/dist/index.min.js';
+      script.integrity='sha384-beLmJBUsOVZDPvWF5LCmz4UP6gk416oF7g703CTEeWuXppHfGUpxoeR9WpkIC3GN';
       script.async=true;
       script.crossOrigin='anonymous';
       script.referrerPolicy='no-referrer';
