@@ -2,9 +2,9 @@
   "$schema": "https://a2a-protocol.org/schemas/v0.3.0/agent-card.json",
   "protocolVersion": "0.3.0",
   "name": "Burger Money Info Agent",
-  "description": "Public, read-only information service for the Burger Money ($BURGERS) charity memecoin on Base. Exposes token metadata, live market data, donation history, and burn information. No authentication required.",
+  "description": "Public information service for the Burger Money ($BURGERS) charity memecoin on Base. Exposes token metadata, live market data, donation history, burn information, and the advisory community ballot. No authentication required.",
   "url": "https://www.burgermoney.org/",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "provider": {
     "organization": "Burger Money",
     "url": "https://www.burgermoney.org/"
@@ -92,6 +92,18 @@
       ],
       "inputModes": ["text/plain", "application/json"],
       "outputModes": ["application/json"]
+    },
+    {
+      "id": "get-community-ballot",
+      "name": "Get the current $BURGERS community ballot",
+      "description": "Returns the current five-seat advisory round configuration and the complete Giving Block Hunger directory snapshot. Results are reproducible from $BURGERS Transfer events on Base.",
+      "tags": ["voting", "ballot", "charity", "hunger", "onchain"],
+      "examples": [
+        "Which organizations are on the current Burger Money ballot?",
+        "How are $BURGERS votes weighted?",
+        "Show me the Hunger organizations eligible for a write-in."
+      ],
+      "outputModes": ["application/json", "text/markdown"]
     }
   ],
   "securitySchemes": {},
@@ -99,7 +111,9 @@
   "additionalInterfaces": [
     { "url": "https://www.burgermoney.org/llms.txt", "transport": "HTTP+GET" },
     { "url": "https://www.burgermoney.org/llms-full.txt", "transport": "HTTP+GET" },
-    { "url": "https://www.burgermoney.org/.well-known/token.json", "transport": "HTTP+GET" }
+    { "url": "https://www.burgermoney.org/.well-known/token.json", "transport": "HTTP+GET" },
+    { "url": "https://www.burgermoney.org/vote-config.json", "transport": "HTTP+GET" },
+    { "url": "https://www.burgermoney.org/vote-organizations.json", "transport": "HTTP+GET" }
   ],
   "x-base-ecosystem": {
     "chain": "base",

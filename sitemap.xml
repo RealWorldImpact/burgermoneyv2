@@ -4,30 +4,36 @@
   <!-- Homepage — project overview, token info, primary CTAs -->
   <url>
     <loc>https://www.burgermoney.org/</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-08-18</lastmod>
   </url>
 
   <!-- Donations tracker — live onchain donation ledger and impact record -->
   <url>
     <loc>https://www.burgermoney.org/donations.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-08-18</lastmod>
   </url>
 
   <!-- Partners — aligned charity-first projects on Base -->
   <url>
     <loc>https://www.burgermoney.org/partners.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-08-18</lastmod>
+  </url>
+
+  <!-- Community voting — holder write-ins and token-weighted hunger ballot -->
+  <url>
+    <loc>https://www.burgermoney.org/vote.html</loc>
+    <lastmod>2026-08-18</lastmod>
   </url>
 
   <!-- Agent-readable site manifests (linked from every page's <head>) -->
   <url>
     <loc>https://www.burgermoney.org/llms.txt</loc>
-    <lastmod>2026-06-07</lastmod>
+    <lastmod>2026-08-18</lastmod>
   </url>
 
   <url>
     <loc>https://www.burgermoney.org/llms-full.txt</loc>
-    <lastmod>2026-06-07</lastmod>
+    <lastmod>2026-08-18</lastmod>
   </url>
 
   <url>

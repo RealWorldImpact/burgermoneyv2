@@ -9,6 +9,14 @@
   "theme_color": "#0052ff",
   "lang": "en-US",
   "categories": ["finance", "social"],
+  "shortcuts": [
+    {
+      "name": "Community Ballot",
+      "short_name": "Vote",
+      "description": "Open the current $BURGERS holder ballot.",
+      "url": "/vote.html"
+    }
+  ],
   "icons": [
     {
       "src": "/icon-192.png",

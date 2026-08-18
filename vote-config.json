@@ -1,0 +1,15 @@
+{
+  "round": 1,
+  "status": "open",
+  "title": "Hunger Relief Round 1",
+  "openedAt": "2026-08-18T22:48:39Z",
+  "startBlock": 50151986,
+  "slots": 5,
+  "chainId": 8453,
+  "token": "0x06A05043eb2C1691b19c2C13219dB9212269dDc5",
+  "controller": "0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5",
+  "voteInbox": "0x42555247564F5445000000000000000000000000",
+  "writeInInbox": "0x4255524757524954450000000000000000000000",
+  "organizationSource": "vote-organizations.json",
+  "notice": "This advisory poll does not create governance rights. Burger Money retains final discretion over donations."
+}

@@ -1,0 +1,803 @@
+{
+  "source": "https://thegivingblock.com/donate/",
+  "filter": "Hunger",
+  "reviewed": "2026-08-18",
+  "count": 159,
+  "organizations": [
+    {
+      "name": "One Roof Ecumenical Allianceout reach Incorporation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/one-roof-ecumenical-alliance-outreach"
+    },
+    {
+      "name": "Haiti Health Promise/ Holy Name Medical Center Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/haiti-health-promise-holy-name-medical-center-foundation"
+    },
+    {
+      "name": "UNITED WAY OF THE CENTRAL SAVANNAH RIVER AREA INC",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/united-way-of-the-central-savannah-river-area-inc"
+    },
+    {
+      "name": "Lisa Dahl Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/lisa-dahl-foundation"
+    },
+    {
+      "name": "Rethink Food USA",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/rethink-food-usa"
+    },
+    {
+      "name": "Bridgeport Rescue Mission, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/bridgeport-rescue-mission-inc"
+    },
+    {
+      "name": "California Association of Food Banks",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/california-association-of-food-banks"
+    },
+    {
+      "name": "Humanitas et Caritas Amoris Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/humanitas-et-caritas-amoris-inc"
+    },
+    {
+      "name": "Meals on Wheels North Central Texas Inc",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/meals-on-wheels-north-central-texas"
+    },
+    {
+      "name": "Northern Illinois Food Bank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/northern-illinois-food-bank"
+    },
+    {
+      "name": "Rescuing Leftover Cuisine",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/rescuing-leftover-cuisine"
+    },
+    {
+      "name": "Native American Veterans Assistance",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/native-american-veterans-assistance"
+    },
+    {
+      "name": "4MYCITY INC.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/4mycity-inc"
+    },
+    {
+      "name": "Feeding America",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/feeding-america"
+    },
+    {
+      "name": "Yad Ezra V'Shulamit",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/yad-ezra-vshulamit"
+    },
+    {
+      "name": "Mercy Drops",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/mercy-drops"
+    },
+    {
+      "name": "Airlink",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/airlink"
+    },
+    {
+      "name": "Move for Hunger, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/move-for-hunger-inc"
+    },
+    {
+      "name": "No Kid Hungry",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/no-kid-hungry"
+    },
+    {
+      "name": "Jewish Federation of Detroit",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/jewish-federation-of-metropolitan-detroit"
+    },
+    {
+      "name": "World Central Kitchen",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/world-central-kitchen"
+    },
+    {
+      "name": "Food Yoga International",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-yoga-international"
+    },
+    {
+      "name": "Northwest Compass Inc",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/northwest-compass"
+    },
+    {
+      "name": "WeForest",
+      "country": "BE",
+      "url": "https://thegivingblock.com/donate/weforest"
+    },
+    {
+      "name": "Haiti Health Promise / CRUDEM Fnd",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/health-promise-crudem-fnd"
+    },
+    {
+      "name": "Gleaners Food Bank of Indiana, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/gleaners"
+    },
+    {
+      "name": "Mercy Corps EU",
+      "country": "GB",
+      "url": "https://thegivingblock.com/donate/mercy-corps-eu"
+    },
+    {
+      "name": "Downtown Rescue Mission, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/downtown-rescue-mission-inc"
+    },
+    {
+      "name": "People Loving Nashville",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/people-loving-nashville"
+    },
+    {
+      "name": "Christians Against Poverty New Zealand",
+      "country": "NZ",
+      "url": "https://thegivingblock.com/donate/christians-against-poverty-new-zealand"
+    },
+    {
+      "name": "Second Harvest Food Bank of Clark, Champaign, and Logan Counties",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/ohio-tri-county-food-alliance"
+    },
+    {
+      "name": "Alameda County Community Food Bank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/accfb"
+    },
+    {
+      "name": "World Hunger Team, Inc",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/world-hunger-team"
+    },
+    {
+      "name": "MURPHSLIFE FOUNDATION",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/murphslife-foundation"
+    },
+    {
+      "name": "American Friends of Meir Panim",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/american-friends-of-meir-panim"
+    },
+    {
+      "name": "Wounded Warriors",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/wounded-warriors"
+    },
+    {
+      "name": "Kitchen Angels",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/kitchen-angels"
+    },
+    {
+      "name": "Hope Ministries",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/hope-ministries"
+    },
+    {
+      "name": "Los Angeles Regional Food Bank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/los-angeles-regional-food-bank"
+    },
+    {
+      "name": "The Motley Fool",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/the-motley-fool"
+    },
+    {
+      "name": "Lucky Duck Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/lucky-duck-foundation"
+    },
+    {
+      "name": "Soldiers' Angels",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/soldiers-angels"
+    },
+    {
+      "name": "Penny Appeal",
+      "country": "GB",
+      "url": "https://thegivingblock.com/donate/penny-appeal"
+    },
+    {
+      "name": "Beyond Shelter Frederick",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/the-religious-coalition"
+    },
+    {
+      "name": "Coalition for the Homeless, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/coalition-for-the-homeless-inc"
+    },
+    {
+      "name": "Christ Greenfield",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/christ-greenfield"
+    },
+    {
+      "name": "Food for the Hungry",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-for-the-hungry"
+    },
+    {
+      "name": "Roadrunner Food Bank, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/roadrunner-food-bank-inc"
+    },
+    {
+      "name": "Oxfam America",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/oxfamamerica"
+    },
+    {
+      "name": "Convoy of Hope",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/convoy-of-hope"
+    },
+    {
+      "name": "Action Against Hunger Canada",
+      "country": "CA",
+      "url": "https://thegivingblock.com/donate/action-against-hunger-canada"
+    },
+    {
+      "name": "FINCA",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/finca"
+    },
+    {
+      "name": "Catholic Charities USA",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/catholic-charities-usa"
+    },
+    {
+      "name": "American Friends of Leket Israel",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/american-friends-of-leket-israel"
+    },
+    {
+      "name": "Helping Hand For Relief and Development, Inc",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/helping-hand-for-relief-and-development-inc"
+    },
+    {
+      "name": "Action Against Hunger USA",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/action-against-hunger"
+    },
+    {
+      "name": "Meals on Wheels of Alameda County",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/meals-on-wheels-of-alameda-county"
+    },
+    {
+      "name": "We Don't Waste",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/we-dont-waste"
+    },
+    {
+      "name": "The Dandelion Philosophy",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/dandelion-philosophy"
+    },
+    {
+      "name": "Serve 6.8",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/serve-6-8"
+    },
+    {
+      "name": "Treasure Coast Food Bank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/treasure-coast-food-bank"
+    },
+    {
+      "name": "Community Action Partnership of Kern Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/community-action-partnership-of-kern-foundation"
+    },
+    {
+      "name": "Under One Sky",
+      "country": "GB",
+      "url": "https://thegivingblock.com/donate/under-one-sky"
+    },
+    {
+      "name": "Second Harvest of Silicon Valley",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/second-harvest-of-silicon-valley"
+    },
+    {
+      "name": "World Orphanage Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/world-orphanage-foundation"
+    },
+    {
+      "name": "New Hampshire Food Bank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/new-hampshire-food-bank"
+    },
+    {
+      "name": "SOS-Yemen",
+      "country": "AT",
+      "url": "https://thegivingblock.com/donate/sos-yemen"
+    },
+    {
+      "name": "Food Finders",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-finders"
+    },
+    {
+      "name": "Conscious Alliance",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/conscious-alliance"
+    },
+    {
+      "name": "Miracles for Kids",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/miracles-for-kids"
+    },
+    {
+      "name": "Global Impact",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/global-impact"
+    },
+    {
+      "name": "Food Bank of South Jersey",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-bank-of-south-jersey"
+    },
+    {
+      "name": "Support and Feed, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/support-and-feed"
+    },
+    {
+      "name": "Pathlight HOME",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/pathlight-home"
+    },
+    {
+      "name": "Akron-Canton Regional Foodbank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/akron-canton-regional-foodbank"
+    },
+    {
+      "name": "WESTSIDE FOOD BANK",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/west-side-food-bank"
+    },
+    {
+      "name": "Samaritan House",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/samaritan-house"
+    },
+    {
+      "name": "Ronald McDonald House Charities of Arkansas, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/ronald-mcdonald-house-charities-of-arkansas"
+    },
+    {
+      "name": "United Way of Northeast Mississippi, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/united-way-of-northeast-mississippi"
+    },
+    {
+      "name": "Connecting Kids To Meals",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/connecting-kids-to-meals"
+    },
+    {
+      "name": "Atlanta Community Food Bank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/atlanta-community-food-bank"
+    },
+    {
+      "name": "Ronald McDonald House Charities - Bay Area",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/ronald-mcdonald-house-charities-bay-area"
+    },
+    {
+      "name": "Palm Beach County Food Bank, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/palm-beach-county-food-bank-inc"
+    },
+    {
+      "name": "Bridgehampton Child Care and Recreational Center",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/bridgehampton-child-care-and-recreational-center"
+    },
+    {
+      "name": "Redwood Empire Food Bank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/redwood-empire-food-bank"
+    },
+    {
+      "name": "Good Hope Equestrian & Regenerative Farm, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/good-hope-equestrian-regenerative-farm"
+    },
+    {
+      "name": "Food Bank of Northeast Georgia, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-bank-of-northeast-georgia-inc"
+    },
+    {
+      "name": "Nourishing Hope",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/lakeview-pantry"
+    },
+    {
+      "name": "United Way of Coastal and Western Connecticut",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/united-way-of-coastal-and-western-connecticut"
+    },
+    {
+      "name": "2535 Water",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/2535-water"
+    },
+    {
+      "name": "Zaman International",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/zaman-international"
+    },
+    {
+      "name": "CARE Ceska republika",
+      "country": "CZ",
+      "url": "https://thegivingblock.com/donate/care-ceska-republika"
+    },
+    {
+      "name": "Replate",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/replate"
+    },
+    {
+      "name": "Celebration Nation Inc",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/celebration-nation-inc"
+    },
+    {
+      "name": "KIPP NYC",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/kipp-nyc"
+    },
+    {
+      "name": "Food Bank of the Rockies",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-bank-of-the-rockies"
+    },
+    {
+      "name": "Food Bank of Northeast Arkansas",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-bank-of-northeast-arkansas"
+    },
+    {
+      "name": "Charity Right",
+      "country": "GB",
+      "url": "https://thegivingblock.com/donate/charity-right"
+    },
+    {
+      "name": "Food Bank of Central New York",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-bank-of-central-new-york"
+    },
+    {
+      "name": "Food Bank of Iowa",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-bank-of-iowa"
+    },
+    {
+      "name": "Ali Forney Center",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/ali-forney-center"
+    },
+    {
+      "name": "The Bowery Mission",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/the-bowery-mission"
+    },
+    {
+      "name": "Long Island Cares, Inc",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/long-island-cares"
+    },
+    {
+      "name": "Emmanuel Cancer Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/emmanuel-cancer-foundation"
+    },
+    {
+      "name": "Be Team International",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/be-team-international"
+    },
+    {
+      "name": "Fresno Mission",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/fresno-rescue-mission"
+    },
+    {
+      "name": "Food Share of Ventura County",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-share-of-ventura-county"
+    },
+    {
+      "name": "A Child's Hope Int'l",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/a-childs-hope-intl"
+    },
+    {
+      "name": "Food Bank For New York City",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/food-bank-for-new-york-city"
+    },
+    {
+      "name": "The Farmlink Project",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/the-farmlink-project"
+    },
+    {
+      "name": "Mountaineer Food Bank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/mountaineer-food-bank"
+    },
+    {
+      "name": "UNITED WAY OF TARRANT COUNTY",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/united-way-of-tarrant-county"
+    },
+    {
+      "name": "Lighthouse MI",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/lighthouse-mi"
+    },
+    {
+      "name": "Chazaq Organization USA",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/chazaq-organization-usa"
+    },
+    {
+      "name": "A Just Harvest",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/a-just-harvest"
+    },
+    {
+      "name": "Evangel Church",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/evangel-church"
+    },
+    {
+      "name": "LegacyTree Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/legacy-tree-foundation"
+    },
+    {
+      "name": "Chattanooga Area Food Bank, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/chattanooga-area-food-bank"
+    },
+    {
+      "name": "Martha's Kitchen",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/marthas-kitchen"
+    },
+    {
+      "name": "Metropolitan Ministries",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/metropolitan-ministries"
+    },
+    {
+      "name": "Community of Grace Lutheran Church",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/community-of-grace-lutheran-church"
+    },
+    {
+      "name": "Beverly Bootstraps",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/beverly-bootstraps"
+    },
+    {
+      "name": "YouthHope",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/youthhope"
+    },
+    {
+      "name": "Breakthrough",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/breakthrough"
+    },
+    {
+      "name": "Boys & Girls Clubs of Northwest Georgia",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/boys-girls-clubs-of-northwest-georgia"
+    },
+    {
+      "name": "Utah Food Bank",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/utah-food-bank"
+    },
+    {
+      "name": "Heal + Thrive Global",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/heal-thrive-global"
+    },
+    {
+      "name": "Stone Soup Cafe, Inc.",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/stone-soup-cafe"
+    },
+    {
+      "name": "Blessings of Hope",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/blessings-of-hope"
+    },
+    {
+      "name": "Kids’ Food Basket",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/kids-food-basket"
+    },
+    {
+      "name": "Tŷ Krishna Cymru",
+      "country": "GB",
+      "url": "https://thegivingblock.com/donate/ty-krishna-cymru"
+    },
+    {
+      "name": "The Sophia Way",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/the-sophia-way"
+    },
+    {
+      "name": "Jackson Interfaith Shelter",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/jackson-interfaith-shelter"
+    },
+    {
+      "name": "Maya Health Alliance | Wuqu' Kawoq Guatemala",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/maya-health-alliance-wuqu-kawoq-guatemala"
+    },
+    {
+      "name": "Common Threads",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/common-threads"
+    },
+    {
+      "name": "Giraffe Laugh Early Learning Centers",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/giraffe-laugh-early-learning-centers"
+    },
+    {
+      "name": "The Advocates",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/the-advocates"
+    },
+    {
+      "name": "Good360",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/good360"
+    },
+    {
+      "name": "Feed the Children",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/feed-the-children"
+    },
+    {
+      "name": "Philabundance",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/philabundance"
+    },
+    {
+      "name": "Second Harvest Heartland",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/second-harvest-heartland"
+    },
+    {
+      "name": "Edinburgh Dog and Cat Home",
+      "country": "GB",
+      "url": "https://thegivingblock.com/donate/edinburgh-dog-and-cat-home"
+    },
+    {
+      "name": "Project Phil",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/project-phil"
+    },
+    {
+      "name": "Community Action Partnership of Orange County (CAP OC)",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/community-action-partnership-of-orange-county-capoc"
+    },
+    {
+      "name": "Feeding America's Hungry Children",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/feeding-americas-hungry-children"
+    },
+    {
+      "name": "Foodbank of Southeastern Virginia and the Eastern Shore",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/foodbank-of-southeastern-virginia-and-the-eastern-shore"
+    },
+    {
+      "name": "Feeding Southwest Virginia",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/feeding-southwest-virginia"
+    },
+    {
+      "name": "SERV International",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/serv-international"
+    },
+    {
+      "name": "Meals on Wheels WSD",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/meals-on-wheels-wsd"
+    },
+    {
+      "name": "Second Harvest Food Bank Orange County",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/second-harvest-food-bank-orange-county"
+    },
+    {
+      "name": "Rethink Food",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/rethink-food"
+    },
+    {
+      "name": "United Way Miami",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/united-way-miami"
+    },
+    {
+      "name": "Chef Ann Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/chef-ann-foundation"
+    },
+    {
+      "name": "The Hunger Project",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/the-hunger-project"
+    },
+    {
+      "name": "Feeding Texas",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/feeding-texas"
+    },
+    {
+      "name": "Fruit Tree Planting Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/fruit-tree-planting-foundation"
+    },
+    {
+      "name": "Family Promise - Greater Phoenix",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/family-promise-greater-phoenix"
+    },
+    {
+      "name": "Shania Twain Foundation",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/shania-twain-foundation"
+    },
+    {
+      "name": "American Foundation for Children with AIDS (AFCA)",
+      "country": "US",
+      "url": "https://thegivingblock.com/donate/afca"
+    }
+  ]
+}

@@ -58,6 +58,7 @@ This file makes claims. Don't trust them — verify against the chain:
 | 15.81% burned | Query Transfer events to `0x0` (or known burn addresses); divide burned by max supply |
 | Donations to listed charities | Query Transfer events FROM `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5`; recipient addresses are listed alongside their named charities on /donations.html |
 | Optional donor notes | Notes use BURG encoding (4-byte magic `0x42555247` prefix); decode a donation's input data to verify |
+| Community ballot | Read the published round from `/vote-config.json`, the Giving Block Hunger directory snapshot from `/vote-organizations.json`, and matching $BURGERS `Transfer` logs from the round's `startBlock` |
 | Uniswap V4 pool state, LP fees | Query Uniswap V4 PoolManager (singleton on Base) by pool key; query PositionManager for LP NFTs |
 
 If any claim in this file conflicts with onchain state, **the chain wins**.
@@ -86,6 +87,10 @@ The donation transparency page. Contains:
 ### Partners (`/partners.html`)
 
 Stacked partner cards for TidyCoin, MemeForTrees, and The Love Token. Each card shows logo, ticker chip, tagline, description, and outbound link.
+
+### Community ballot (`/vote.html`)
+
+An advisory, token-weighted signal for $BURGERS holders. Each developer-published round starts with exactly five empty seats. Eligible holders may nominate one organization from the complete The Giving Block Hunger impact-area directory; the first five valid, unique nominations become the ballot and open voting. Votes and nominations are microscopic ERC-20 transfers on Base, with `round * 1000 + organizationId` token wei encoding the choice. A wallet's latest valid vote in a round replaces its prior vote, and its live $BURGERS balance determines voting weight. The ballot does not create governance rights, and Burger Money retains final discretion over donations.
 
 ## Action endpoints — for agents that want to participate
 
