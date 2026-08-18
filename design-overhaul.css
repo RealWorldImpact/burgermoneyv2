@@ -899,8 +899,9 @@ header.nav .nav-buttons>.btn-sm{box-sizing:border-box;min-height:44px}
   --soc-accent:#f1f4ff;
   position:relative;
   overflow:hidden;
-  min-height:260px;
-  padding:28px 28px 34px;
+  min-height:224px;
+  gap:8px;
+  padding:22px 22px 28px;
   border:1px solid rgba(255,255,255,.14);
   border-radius:20px;
   color:var(--soc-accent);
@@ -911,12 +912,12 @@ header.nav .nav-buttons>.btn-sm{box-sizing:border-box;min-height:44px}
 .soc:nth-child(2){--soc-accent:#37aee2}
 .soc:nth-child(3){--soc-accent:#5f87ff}
 .soc:nth-child(4){--soc-accent:#55e5a2}
-.soc::after{content:"";position:absolute;right:24px;bottom:15px;left:24px;height:2px;background:linear-gradient(90deg,var(--soc-accent),transparent);opacity:.68}
+.soc::after{content:"";position:absolute;right:20px;bottom:12px;left:20px;height:2px;background:linear-gradient(90deg,var(--soc-accent),transparent);opacity:.68}
 .soc:hover{transform:translateY(-5px);border-color:rgba(255,255,255,.22);background:linear-gradient(145deg,rgba(255,255,255,.11),rgba(49,95,230,.13));box-shadow:inset 0 1px rgba(255,255,255,.09),0 20px 38px -25px var(--soc-accent)}
-.soc .si{width:58px;height:58px;border:1px solid rgba(255,255,255,.16);border-radius:16px;background:rgba(255,255,255,.07);box-shadow:inset 0 1px rgba(255,255,255,.08)}
-.soc h4{color:#fff;font-size:1.25rem}
-.soc p{color:#9da8c8;font-size:.96rem}
-.soc .go{color:var(--soc-accent);font-weight:700}
+.soc .si{width:50px;height:50px;border:1px solid rgba(255,255,255,.16);border-radius:14px;background:rgba(255,255,255,.07);box-shadow:inset 0 1px rgba(255,255,255,.08)}
+.soc h4{color:#fff;font-size:1.12rem}
+.soc p{color:#9da8c8;font-size:.88rem;line-height:1.4}
+.soc .go{color:var(--soc-accent);font-size:.9rem;font-weight:700}
 
 .buy-banner{
   margin:36px clamp(10px,2vw,28px);
@@ -1222,7 +1223,12 @@ footer{margin-top:100px;padding:68px 0 34px;border-top:1px solid rgba(255,255,25
   .stat .v{color:#fff;font-size:clamp(1.28rem,6vw,1.62rem)}
   .stat .k{margin-top:7px;color:#9da8c8;font-size:.66rem;letter-spacing:.09em}
   .social-grid{grid-template-columns:1fr}
-  .soc{min-height:0;transform:none!important}
+  .soc{display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto auto;column-gap:14px;row-gap:4px;min-height:0;padding:17px 18px 22px;transform:none!important}
+  .soc .si{grid-column:1;grid-row:1/4;width:44px;height:44px;border-radius:12px}
+  .soc h4{grid-column:2;grid-row:1;font-size:1.03rem;line-height:1.2}
+  .soc p{grid-column:2;grid-row:2;font-size:.82rem;line-height:1.35}
+  .soc .go{grid-column:2;grid-row:3;margin-top:2px;font-size:.84rem}
+  .soc::after{right:18px;bottom:9px;left:76px}
   .buy-banner{margin-inline:8px;border-radius:22px;box-shadow:6px 6px 0 var(--mustard)}
   footer{margin-top:74px}
   .page-donations .hero .title{font-size:clamp(3.25rem,16vw,5.1rem)}
