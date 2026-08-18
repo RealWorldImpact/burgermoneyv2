@@ -54,47 +54,26 @@ html{scroll-padding-top:96px}
 .flavor-glow.is-active{opacity:.96}
 
 .flavor-trail{
-  --trail-alpha:.22;
+  --trail-alpha:.18;
   position:fixed;
   z-index:0;
   top:0;
   left:0;
-  width:var(--trail-size,104px);
-  height:var(--trail-size,104px);
+  width:var(--trail-size,64px);
+  height:var(--trail-size,64px);
   border-radius:50%;
   pointer-events:none;
   opacity:0;
   background:
-    radial-gradient(circle at 42% 42%,rgba(185,242,39,.25),rgba(185,242,39,.07) 34%,transparent 70%),
-    radial-gradient(circle at 62% 60%,rgba(77,124,255,.16),rgba(77,124,255,.045) 38%,transparent 72%);
-  -webkit-mask-image:radial-gradient(circle,#000 0 40%,transparent 76%);
-  mask-image:radial-gradient(circle,#000 0 40%,transparent 76%);
+    radial-gradient(circle at 44% 43%,rgba(255,245,220,.24),rgba(185,242,39,.17) 19%,rgba(77,124,255,.055) 45%,transparent 72%);
+  -webkit-mask-image:radial-gradient(circle,#000 0 32%,rgba(0,0,0,.75) 48%,transparent 74%);
+  mask-image:radial-gradient(circle,#000 0 32%,rgba(0,0,0,.75) 48%,transparent 74%);
   mix-blend-mode:screen;
-  transition:opacity .48s ease;
+  transition:opacity .36s ease;
   will-change:transform,opacity;
   contain:strict;
 }
 .flavor-trail.is-active{opacity:var(--trail-alpha)}
-
-.flavor-cursor{
-  position:fixed;
-  z-index:1002;
-  top:0;
-  left:0;
-  width:26px;
-  height:26px;
-  border:1px solid rgba(255,245,220,.7);
-  border-radius:50%;
-  pointer-events:none;
-  opacity:0;
-  background:radial-gradient(circle,rgba(255,189,50,.82) 0 2px,rgba(185,242,39,.22) 3px,transparent 6px);
-  box-shadow:0 0 0 3px rgba(185,242,39,.07),0 0 18px rgba(185,242,39,.42),inset 0 0 10px rgba(77,124,255,.16);
-  mix-blend-mode:screen;
-  transform:translate3d(calc(var(--pointer-x,50vw) - 13px),calc(var(--pointer-y,30vh) - 13px),0);
-  transition:opacity .18s ease;
-  will-change:transform,opacity;
-}
-.flavor-cursor.is-active{opacity:.82}
 
 header.nav{
   top:12px;
@@ -518,7 +497,7 @@ header.nav .nav-buttons>.btn-sm{box-sizing:border-box;min-height:44px}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .flavor-glow,.flavor-trail,.flavor-cursor{display:none}
+  .flavor-glow,.flavor-trail{display:none}
   .burger-stage{animation:none!important}
   .founder-photo img{transition:none!important}
   .founder-wrap:hover .founder-photo img{transform:none!important}

@@ -14,19 +14,14 @@
   glow.setAttribute('aria-hidden','true');
   body.appendChild(glow);
 
-  var cursor=document.createElement('div');
-  cursor.className='flavor-cursor';
-  cursor.setAttribute('aria-hidden','true');
-  body.appendChild(cursor);
-
   var trail=[];
-  for(var trailIndex=0;trailIndex<8;trailIndex++){
+  for(var trailIndex=0;trailIndex<6;trailIndex++){
     var trailElement=document.createElement('div');
-    var trailSize=118-(trailIndex*8);
+    var trailSize=72-(trailIndex*8);
     trailElement.className='flavor-trail';
     trailElement.setAttribute('aria-hidden','true');
     trailElement.style.setProperty('--trail-size',trailSize+'px');
-    trailElement.style.setProperty('--trail-alpha',String(.24-(trailIndex*.019)));
+    trailElement.style.setProperty('--trail-alpha',String(.22-(trailIndex*.025)));
     body.appendChild(trailElement);
     trail.push({element:trailElement,size:trailSize,x:window.innerWidth*.5,y:window.innerHeight*.3});
   }
@@ -42,7 +37,6 @@
     root.style.setProperty('--pointer-x',pointerX+'px');
     root.style.setProperty('--pointer-y',pointerY+'px');
     glow.classList.add('is-active');
-    cursor.classList.add('is-active');
   }
   function paintTrail(time){
     trailFrame=0;
@@ -50,7 +44,7 @@
     var leadY=pointerY;
     var settled=true;
     trail.forEach(function(node,index){
-      var ease=Math.max(.12,.27-(index*.017));
+      var ease=Math.max(.15,.3-(index*.025));
       var dx=leadX-node.x;
       var dy=leadY-node.y;
       node.x+=dx*ease;
@@ -61,7 +55,7 @@
       leadX=node.x;
       leadY=node.y;
     });
-    if((time-trailLastMove)<460||!settled){
+    if((time-trailLastMove)<340||!settled){
       trailFrame=window.requestAnimationFrame(paintTrail);
     }else{
       trail.forEach(function(node){node.element.classList.remove('is-active');});
@@ -82,7 +76,6 @@
     if(!event.relatedTarget){
       hasPointerPosition=false;
       glow.classList.remove('is-active');
-      cursor.classList.remove('is-active');
       trail.forEach(function(node){node.element.classList.remove('is-active');});
       if(trailFrame){window.cancelAnimationFrame(trailFrame);trailFrame=0;}
     }
