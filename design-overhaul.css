@@ -576,7 +576,7 @@ footer{margin-top:100px;padding:68px 0 34px;border-top:1px solid rgba(255,255,25
   .sec{padding:76px 0}
   .sec-title,.title{font-size:clamp(2.65rem,9vw,4.8rem)}
   .founder-wrap{grid-template-columns:1fr;transform:none}
-  .founder-photo img{min-height:0;aspect-ratio:4/3}
+  .founder-photo img{min-height:0;aspect-ratio:4/3;object-position:50% top}
   .social-grid{grid-template-columns:repeat(2,1fr)}
   .page-donations .hero{padding:128px 0 76px}
   .page-donations .hero-grid{grid-template-columns:1fr}
