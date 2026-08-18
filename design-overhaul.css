@@ -238,7 +238,13 @@ header.nav .wrap{max-width:1440px}
   box-shadow:5px 5px 0 rgba(0,0,0,.32);
 }
 .hero .btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 rgba(0,0,0,.35)}
-.hero .btn-donate{background:var(--pickle);color:#132006;text-shadow:none}
+.hero .btn-donate{
+  color:#fff;
+  background:linear-gradient(180deg,#176bff,#0052ff 68%,#003ec7);
+  text-shadow:0 1px 0 rgba(0,0,0,.22);
+  box-shadow:5px 5px 0 rgba(0,0,0,.32),0 12px 30px rgba(0,82,255,.34);
+}
+.hero .btn-donate:hover{box-shadow:8px 8px 0 rgba(0,0,0,.35),0 18px 38px rgba(0,82,255,.44)}
 .hero .btn-ghost{background:rgba(255,255,255,.06)}
 
 .trust-row{
@@ -307,8 +313,8 @@ header.nav .wrap{max-width:1440px}
   place-items:center;
   border:2px solid var(--night);
   border-radius:11px;
-  background:var(--pickle);
-  box-shadow:2px 2px 0 var(--mustard);
+  background:linear-gradient(145deg,#176bff,#0052ff 72%,#003ec7);
+  box-shadow:2px 2px 0 #7da4ff;
 }
 .page-home .impact-ledger-logo .brand-logo-inline{width:34px;height:34px;margin:0;vertical-align:0;filter:none}
 .page-home .impact-ledger-link strong{font-family:'Fredoka';font-size:1.08rem;letter-spacing:-.01em}
