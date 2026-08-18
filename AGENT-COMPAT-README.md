@@ -12,15 +12,15 @@ BurgerMoney.org is machine-readable by AI agents on Base and the broader agent w
 | `robots.txt` | site root → `/robots.txt` | Explicitly allows GPTBot, ClaudeBot, anthropic-ai, PerplexityBot, OAI-SearchBot, Google-Extended, Applebot-Extended, Bingbot, etc. |
 | `sitemap.xml` | site root → `/sitemap.xml` | Lists the page and all agent-discovery files |
 | `manifest.webmanifest` | site root → `/manifest.webmanifest` | PWA manifest (Base App / mobile installs) |
-| `.well-known/agent.json` | site root → `/.well-known/agent.json` | A2A Agent Card — 7 read-only skills (`get-token-info`, `get-live-market`, `get-burn-percentage`, `get-charity-mission`, `get-takeover-grid`, `get-buy-link`, `verify-contract`). No auth required. |
+| `.well-known/agent.json` | site root → `/.well-known/agent.json` | A2A Agent Card — 6 read-only skills (`get-token-info`, `get-live-market`, `get-burn-percentage`, `get-charity-mission`, `get-buy-link`, `verify-contract`). No auth required. |
 | `.well-known/token.json` | site root → `/.well-known/token.json` | Canonical token metadata in machine-readable JSON |
 | `.well-known/farcaster.json` | site root → `/.well-known/farcaster.json` | Farcaster Mini App manifest with a signed `accountAssociation`. |
 
 ## What the upgrade gets you
 
-- **Base App / Farcaster clients** render a rich embed when the URL is shared (button: "🍔 Buy $BURGERS") via `fc:miniapp` and `fc:frame` meta tags.
+- **Base App / Farcaster clients** render a rich embed with the Burger Money artwork when the URL is shared (button: "Buy $BURGERS") via `fc:miniapp` and `fc:frame` meta tags.
 - **AI search (ChatGPT, Claude, Perplexity, Gemini)** can pull a clean summary from `llms.txt` and the JSON-LD graph instead of guessing from your HTML and JS.
-- **AI agents** following the A2A protocol can discover the site via `/.well-known/agent.json`, see the 7 skills it exposes, and call those skills without auth.
+- **AI agents** following the A2A protocol can discover the site via `/.well-known/agent.json`, see the 6 skills it exposes, and call those skills without auth.
 - **On-chain agents and wallet apps** can read the CAIP-19 identifier (`eip155:8453/erc20:0x06A0…dDc5`) from `<meta name="caip-19">`, the inline `#token-data` JSON block, and `/.well-known/token.json`.
 - **DOM-walking agents** can find the contract address via `data-token-contract` on the contract pill, live stats via `data-metric` on the stat cards, and action targets via `data-action` + `data-platform` on every CTA link.
 

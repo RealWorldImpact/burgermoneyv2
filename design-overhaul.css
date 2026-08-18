@@ -42,6 +42,111 @@ header.nav .wrap{max-width:1440px}
 .brand .bt{letter-spacing:-.045em}
 .nav-buttons>.btn-coinbase{display:none}
 
+/* One header system for every page. Secondary pages previously collapsed at
+   laptop widths, leaving an almost-empty bar; keep the full nav until it no
+   longer fits, then use the same compact menu everywhere. */
+.brand-logo-inline{
+  display:inline-block;
+  width:1.28em;
+  height:1.28em;
+  margin-inline:.08em;
+  vertical-align:-.3em;
+  background-image:var(--logo);
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.28));
+}
+
+@media(min-width:1181px){
+  header.nav .nav-inner{gap:clamp(10px,1.45vw,26px);min-width:0}
+  header.nav .brand{margin-right:0;order:initial;flex:0 0 auto}
+  header.nav #priceTicker{margin-right:auto;order:initial;flex:0 0 auto}
+  header.nav .nav-buttons{
+    display:contents;
+    position:static;
+    min-width:0;
+    padding:0;
+    border:0;
+    background:none;
+    box-shadow:none;
+    opacity:1;
+    visibility:visible;
+    transform:none;
+  }
+  header.nav .nav-buttons .nav-links{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    gap:clamp(10px,1.35vw,24px);
+    min-width:0;
+    margin:0;
+    padding:0;
+    border:0;
+  }
+  header.nav .nav-buttons .nav-links a{padding:0;font-size:.9rem;white-space:nowrap}
+  header.nav .nav-buttons .btn-sm{width:auto;justify-content:center;padding:11px 16px}
+  header.nav .nav-toggle{display:none}
+}
+
+@media(min-width:1181px) and (max-width:1340px){
+  header.nav .nav-buttons .btn-flaunch{padding-inline:13px}
+  header.nav .nav-buttons .btn-flaunch .btn-label{display:none}
+}
+
+@media(max-width:1180px){
+  header.nav .wrap{width:calc(100% - 20px)}
+  header.nav .nav-inner{justify-content:flex-end;flex-wrap:nowrap;gap:8px;position:relative}
+  header.nav .brand{margin-right:0;order:0;flex:0 0 auto}
+  header.nav #priceTicker{margin-right:auto;order:0;flex:0 1 auto;min-width:0}
+  header.nav .nav-toggle{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    order:1;
+    flex:0 0 auto;
+    width:40px;
+    height:40px;
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:999px;
+    color:#fff;
+    background:rgba(255,255,255,.07);
+  }
+  header.nav .nav-buttons{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    position:absolute;
+    top:calc(100% + 12px);
+    right:0;
+    min-width:min(260px,calc(100vw - 36px));
+    padding:12px;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:16px;
+    background:rgba(5,7,19,.96);
+    box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.07);
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(-8px) scale(.98);
+    transform-origin:top right;
+  }
+  header.nav.open .nav-buttons{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+  header.nav .nav-buttons .nav-links{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:2px;
+    margin:0 0 6px;
+    padding:4px 0 10px;
+    border-bottom:1px solid rgba(255,255,255,.09);
+  }
+  header.nav .nav-buttons .nav-links a{display:block;padding:10px 12px;border-radius:9px;color:var(--text)}
+  header.nav .nav-buttons .nav-links a:hover{background:rgba(255,255,255,.07)}
+  header.nav .nav-buttons .nav-links a::after{display:none}
+  header.nav .nav-buttons .btn-sm{width:100%;justify-content:flex-start;padding:11px 16px}
+  header.nav .nav-buttons .btn-sm .btn-label{display:inline}
+}
+
 .hero{
   min-height:100svh;
   padding:138px 0 74px;
@@ -151,6 +256,126 @@ header.nav .wrap{max-width:1440px}
 .trust-row .ti .n{color:var(--cream);font-size:clamp(1.55rem,3vw,2.2rem)}
 .trust-row .ti .l{display:block;color:#8f9ac3;font-size:.67rem}
 
+.page-home .impact-proof{
+  position:relative;
+  isolation:isolate;
+  max-width:620px;
+  margin-top:14px;
+  padding:10px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 92% 8%,rgba(185,242,39,.15),transparent 12rem),
+    linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035));
+  box-shadow:0 22px 50px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.08);
+}
+.page-home .impact-proof::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  opacity:.26;
+  background-image:radial-gradient(circle,rgba(255,255,255,.42) 1px,transparent 1px);
+  background-size:14px 14px;
+  mask-image:linear-gradient(110deg,#000,transparent 58%);
+}
+.page-home .impact-ledger-link{
+  display:grid;
+  grid-template-columns:44px 1fr 38px;
+  align-items:center;
+  gap:12px;
+  min-height:62px;
+  padding:9px 10px 9px 9px;
+  border:2px solid var(--night);
+  border-radius:15px;
+  color:var(--night);
+  background:linear-gradient(135deg,var(--cream),#ffe3a1);
+  box-shadow:4px 4px 0 var(--ketchup);
+  transform:rotate(-.35deg);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+.page-home .impact-ledger-link:hover{
+  color:var(--night);
+  transform:translate(-2px,-2px) rotate(-.35deg);
+  box-shadow:7px 7px 0 var(--ketchup);
+}
+.page-home .impact-ledger-logo{
+  display:grid;
+  width:44px;
+  height:44px;
+  place-items:center;
+  border:2px solid var(--night);
+  border-radius:11px;
+  background:var(--pickle);
+  box-shadow:2px 2px 0 var(--mustard);
+}
+.page-home .impact-ledger-logo .brand-logo-inline{width:34px;height:34px;margin:0;vertical-align:0;filter:none}
+.page-home .impact-ledger-link strong{font-family:'Fredoka';font-size:1.08rem;letter-spacing:-.01em}
+.page-home .impact-ledger-link>svg{
+  width:36px;
+  height:36px;
+  padding:8px;
+  border-radius:999px;
+  color:var(--cream);
+  background:var(--night);
+  transition:transform .2s ease;
+}
+.page-home .impact-ledger-link:hover>svg{transform:translateX(2px)}
+.page-home .impact-proof .trust-row{
+  display:grid!important;
+  grid-template-columns:1fr 1fr;
+  width:100%;
+  max-width:none;
+  margin:10px 0 0;
+  padding:0!important;
+  gap:10px!important;
+  overflow:visible;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+}
+.page-home .impact-proof .trust-row .ti{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  min-height:88px;
+  padding:14px 16px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:15px;
+  text-align:left!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.07);
+}
+.page-home .impact-proof .ti-donated{background:linear-gradient(135deg,rgba(185,242,39,.15),rgba(35,209,139,.055))}
+.page-home .impact-proof .ti-burned{background:linear-gradient(135deg,rgba(255,189,50,.16),rgba(255,75,62,.06))}
+.page-home .impact-proof .ti-icon{
+  display:grid;
+  width:42px;
+  height:42px;
+  place-items:center;
+  border:1px solid currentColor;
+  border-radius:13px;
+  box-shadow:3px 3px 0 rgba(0,0,0,.2);
+}
+.page-home .impact-proof .ti-donated .ti-icon{color:var(--pickle);background:rgba(185,242,39,.08)}
+.page-home .impact-proof .ti-burned .ti-icon{color:var(--mustard);background:rgba(255,189,50,.08)}
+.page-home .impact-proof .ti-copy{display:block;min-width:0}
+.page-home .impact-proof .trust-row .ti .n{
+  color:var(--cream);
+  font-size:clamp(1.6rem,2.8vw,2.15rem);
+  letter-spacing:-.045em;
+  text-shadow:0 4px 18px rgba(0,0,0,.34);
+}
+.page-home .impact-proof .trust-row .ti .l{
+  margin-top:5px;
+  color:#b6c0df;
+  font-size:.62rem;
+  line-height:1.25;
+  letter-spacing:.12em;
+}
+
 .hero-art{perspective:1000px}
 .burger-stage{
   width:min(520px,96%);
@@ -190,6 +415,7 @@ header.nav .wrap{max-width:1440px}
   .hero-copy::before{margin-inline:auto}
   .hero .lede{margin-inline:auto}
   .cta-row-grid,.trust-row{margin-inline:auto}
+  .page-home .impact-proof{margin-inline:auto}
 }
 
 @media(max-width:560px){
@@ -200,6 +426,18 @@ header.nav .wrap{max-width:1440px}
   .hero h1{font-size:clamp(2.65rem,13vw,4rem)}
   .hero .lede{font-size:1rem;margin-top:20px}
   .trust-row .ti{padding:15px 10px;text-align:center!important}
+  .page-home .impact-proof{padding:8px;border-radius:20px}
+  .page-home .impact-ledger-link{grid-template-columns:40px 1fr 34px;min-height:58px;gap:10px;padding:8px}
+  .page-home .impact-ledger-logo{width:40px;height:40px}
+  .page-home .impact-ledger-logo .brand-logo-inline{width:31px;height:31px}
+  .page-home .impact-ledger-link strong{font-size:1rem;text-align:left}
+  .page-home .impact-ledger-link>svg{width:32px;height:32px;padding:7px}
+  .page-home .impact-proof .trust-row{gap:8px!important}
+  .page-home .impact-proof .trust-row .ti{grid-template-columns:1fr;gap:7px;min-height:126px;padding:13px 8px!important;text-align:center!important}
+  .page-home .impact-proof .ti-icon{width:34px;height:34px;margin-inline:auto;border-radius:11px}
+  .page-home .impact-proof .ti-icon svg{width:18px;height:18px}
+  .page-home .impact-proof .trust-row .ti .n{font-size:1.55rem}
+  .page-home .impact-proof .trust-row .ti .l{font-size:.57rem;line-height:1.35}
 }
 
 @media(prefers-reduced-motion:reduce){
