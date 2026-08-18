@@ -211,8 +211,8 @@ header.nav .wrap{max-width:1440px}
 }
 
 .hero h1 .base-blue{
-  color:#7aa2ff;
-  text-shadow:0 0 34px rgba(77,124,255,.62);
+  color:#0052ff;
+  text-shadow:0 0 34px rgba(0,82,255,.68);
 }
 
 .hero h1 .hl{
@@ -489,19 +489,6 @@ header.nav .wrap{max-width:1440px}
 }
 
 #founder{overflow:hidden}
-#founder::before{
-  content:"MEET THE MAKER";
-  position:absolute;
-  right:-.03em;
-  top:.15em;
-  z-index:-1;
-  color:rgba(255,255,255,.025);
-  font-size:clamp(5rem,15vw,13rem);
-  font-weight:700;
-  line-height:.8;
-  letter-spacing:-.08em;
-  white-space:nowrap;
-}
 .founder-wrap{
   grid-template-columns:minmax(260px,.72fr) minmax(0,1.28fr);
   gap:0;
