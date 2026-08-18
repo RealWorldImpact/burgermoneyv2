@@ -69,7 +69,7 @@
     trailElement.className='flavor-trail';
     trailElement.setAttribute('aria-hidden','true');
     trailElement.style.setProperty('--trail-size',trailSize+'px');
-    trailElement.style.setProperty('--trail-alpha',String(.16-(trailIndex*.022)));
+    trailElement.style.setProperty('--trail-alpha',String(.12-(trailIndex*.017)));
     body.appendChild(trailElement);
     trail.push({element:trailElement,size:trailSize,x:window.innerWidth*.5,y:window.innerHeight*.3});
   }

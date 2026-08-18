@@ -398,9 +398,6 @@
   .hero-art{position:relative;display:flex;justify-content:center;align-items:center}
   .burger-stage{width:min(420px,88%);position:relative;animation:float 9s ease-in-out infinite}
   @keyframes float{0%,100%{transform:translateY(0) rotate(-0.6deg)}50%{transform:translateY(-8px) rotate(0.6deg)}}
-  .burger-halo{position:absolute;inset:-40%;background:radial-gradient(circle at 50% 45%,var(--coinbase-soft) 0%,var(--coinbase) 25%,transparent 60%);filter:blur(70px);z-index:0;animation:halo 9s ease-in-out infinite}
-  @keyframes halo{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
-
   .sec{padding:74px 0;position:relative}
   #chart::before{content:"";position:absolute;top:20%;left:50%;transform:translateX(-50%);width:min(820px,90%);height:70%;background:radial-gradient(ellipse at center,var(--coinbase),transparent 72%);filter:blur(70px);opacity:.55;z-index:0;pointer-events:none}
   #chart .wrap{position:relative;z-index:1}
@@ -549,7 +546,7 @@
   }
   @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
-    .burger-stage,.burger-halo{animation:none!important}
+    .burger-stage{animation:none!important}
     .reveal{opacity:1!important;transform:none!important}
   }
   .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease, transform .8s ease}
@@ -789,7 +786,7 @@
   #bmLangBtn:hover{transform:none}
 }
 </style>
-<link rel="stylesheet" href="design-overhaul.css?v=20260818f">
+<link rel="stylesheet" href="design-overhaul.css?v=20260818g">
 </head>
 <body class="page-donations">
 <!-- Machine-readable token data for AI agents. Mirrors /.well-known/token.json. -->
@@ -2097,6 +2094,6 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){sync();});
 })();
 </script>
-<script src="/site-effects.js?v=20260818f" defer></script>
+<script src="/site-effects.js?v=20260818g" defer></script>
 </body>
 </html>
