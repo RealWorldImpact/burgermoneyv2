@@ -896,26 +896,27 @@ header.nav .nav-buttons>.btn-sm{box-sizing:border-box;min-height:44px}
 
 .social-grid{gap:18px;margin-top:42px}
 .soc{
+  --soc-accent:#f1f4ff;
+  position:relative;
+  overflow:hidden;
   min-height:260px;
-  padding:28px;
-  border:2px solid #12162a;
+  padding:28px 28px 34px;
+  border:1px solid rgba(255,255,255,.14);
   border-radius:20px;
-  color:var(--night);
-  background:var(--cream);
-  box-shadow:6px 6px 0 #315fe6;
-  transform:rotate(-.7deg);
+  color:var(--soc-accent);
+  background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(49,95,230,.1));
+  box-shadow:inset 0 1px rgba(255,255,255,.07),0 18px 38px -30px #000;
+  transform:none;
 }
-.soc:nth-child(2){background:var(--pickle);box-shadow:6px 6px 0 var(--ketchup);transform:rotate(.65deg)}
-.soc:nth-child(3){background:#9db9ff;box-shadow:6px 6px 0 var(--mustard);transform:rotate(-.35deg)}
-.soc:nth-child(4){background:#ff8b7f;box-shadow:6px 6px 0 var(--pickle);transform:rotate(.55deg)}
-.soc:hover{transform:translate(-3px,-7px) rotate(0);border-color:#12162a;background:var(--cream);box-shadow:10px 13px 0 #315fe6}
-.soc:nth-child(2):hover{background:var(--pickle);box-shadow:10px 13px 0 var(--ketchup)}
-.soc:nth-child(3):hover{background:#9db9ff;box-shadow:10px 13px 0 var(--mustard)}
-.soc:nth-child(4):hover{background:#ff8b7f;box-shadow:10px 13px 0 var(--pickle)}
-.soc .si{width:58px;height:58px;border:2px solid #12162a;border-radius:16px;background:#fff}
-.soc h4{color:var(--night);font-size:1.25rem}
-.soc p{color:#3f4863;font-size:.96rem}
-.soc .go{color:#132f94;font-weight:700}
+.soc:nth-child(2){--soc-accent:#37aee2}
+.soc:nth-child(3){--soc-accent:#5f87ff}
+.soc:nth-child(4){--soc-accent:#55e5a2}
+.soc::after{content:"";position:absolute;right:24px;bottom:15px;left:24px;height:2px;background:linear-gradient(90deg,var(--soc-accent),transparent);opacity:.68}
+.soc:hover{transform:translateY(-5px);border-color:rgba(255,255,255,.22);background:linear-gradient(145deg,rgba(255,255,255,.11),rgba(49,95,230,.13));box-shadow:inset 0 1px rgba(255,255,255,.09),0 20px 38px -25px var(--soc-accent)}
+.soc .si{width:58px;height:58px;border:1px solid rgba(255,255,255,.16);border-radius:16px;background:rgba(255,255,255,.07);box-shadow:inset 0 1px rgba(255,255,255,.08)}
+.soc h4{color:#fff;font-size:1.25rem}
+.soc p{color:#9da8c8;font-size:.96rem}
+.soc .go{color:var(--soc-accent);font-weight:700}
 
 .buy-banner{
   margin:36px clamp(10px,2vw,28px);
