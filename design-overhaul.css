@@ -25,6 +25,8 @@ body::after{
   mask-image:linear-gradient(to bottom,#000,transparent 70%);
 }
 
+html{scroll-padding-top:96px}
+
 header.nav{
   top:12px;
   left:clamp(10px,2vw,28px);
@@ -202,6 +204,8 @@ header.nav .wrap{max-width:1440px}
 
 @media(prefers-reduced-motion:reduce){
   .burger-stage{animation:none!important}
+  .founder-photo img{transition:none!important}
+  .founder-wrap:hover .founder-photo img{transform:none!important}
 }
 
 /* ---------- Shared sections ---------- */
@@ -265,12 +269,34 @@ header.nav .wrap{max-width:1440px}
   box-shadow:var(--shadow-hard),0 36px 100px -50px rgba(77,124,255,.9);
   transform:rotate(-.35deg);
 }
-.founder-photo{height:100%;border:0;border-radius:0;box-shadow:none}
-.founder-photo img{height:100%;min-height:460px;aspect-ratio:auto}
-.founder-photo::after{background:linear-gradient(180deg,transparent 55%,rgba(5,7,19,.35))}
-.founder-copy{padding:clamp(30px,5vw,64px)}
+.founder-photo{
+  height:auto;
+  align-self:stretch;
+  margin:18px;
+  border:2px solid #14182c;
+  border-radius:22px;
+  background:#14182c;
+  box-shadow:6px 6px 0 rgba(77,124,255,.48);
+}
+.founder-photo img{
+  height:100%;
+  min-height:430px;
+  aspect-ratio:auto;
+  border-radius:19px;
+  transition:transform .45s cubic-bezier(.2,.7,.2,1);
+}
+.founder-wrap:hover .founder-photo img{transform:scale(1.018)}
+.founder-photo::after{border-radius:19px;background:linear-gradient(180deg,transparent 55%,rgba(5,7,19,.35))}
+.founder-copy{padding:clamp(30px,5vw,64px);padding-left:clamp(22px,3vw,42px)}
 .founder-copy h3{color:var(--night);font-size:clamp(2rem,4vw,4rem);letter-spacing:-.05em}
-.founder-copy .role{color:#315fe6}
+.founder-copy .role{
+  max-width:100%;
+  padding:7px 10px;
+  border:1px solid rgba(49,95,230,.2);
+  border-radius:999px;
+  color:#315fe6;
+  background:rgba(49,95,230,.08);
+}
 .founder-copy p{color:#46506c;font-size:1.03rem;line-height:1.72}
 .founder-copy p strong{color:#11162b}
 
@@ -576,7 +602,9 @@ footer{margin-top:100px;padding:68px 0 34px;border-top:1px solid rgba(255,255,25
   .sec{padding:76px 0}
   .sec-title,.title{font-size:clamp(2.65rem,9vw,4.8rem)}
   .founder-wrap{grid-template-columns:1fr;transform:none}
-  .founder-photo img{min-height:0;aspect-ratio:4/3;object-position:50% top}
+  .founder-photo{width:auto;max-width:none;margin:16px 16px 0;border-radius:20px;box-shadow:5px 5px 0 rgba(77,124,255,.48)}
+  .founder-photo img{min-height:0;aspect-ratio:4/3;border-radius:17px;object-position:50% top}
+  .founder-photo::after{border-radius:17px}
   .social-grid{grid-template-columns:repeat(2,1fr)}
   .page-donations .hero{padding:128px 0 76px}
   .page-donations .hero-grid{grid-template-columns:1fr}
@@ -596,7 +624,9 @@ footer{margin-top:100px;padding:68px 0 34px;border-top:1px solid rgba(255,255,25
   header.nav{left:8px;right:8px}
   .sec{padding:64px 0}
   .eyebrow{font-size:.63rem;letter-spacing:.12em}
-  .founder-copy{padding:28px 22px}
+  .founder-photo{margin:13px 13px 0;border-radius:18px;box-shadow:4px 4px 0 rgba(77,124,255,.48)}
+  .founder-photo img,.founder-photo::after{border-radius:15px}
+  .founder-copy{padding:30px 22px 28px}
   #mission .reveal{padding:34px 22px;transform:none;box-shadow:7px 7px 0 var(--ketchup)}
   .stat-strip{grid-template-columns:1fr 1fr}
   .stat{min-height:96px;transform:none!important}
