@@ -2,6 +2,7 @@
   'use strict';
 
   const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+  const APPROVAL_TOPIC = '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925';
   const BASE = {
     idHex:'0x2105',
     params:{
@@ -19,9 +20,13 @@
   const ROUND_CONTROLLER = '0x9cd7c9196a4c1836a3df089cb210272e07e6a5e5';
   const VOTE_INBOX = '0x42555247564f5445000000000000000000000000';
   const WRITE_IN_INBOX = '0x4255524757524954450000000000000000000000';
+  const ROUND_CONTROL_SPENDER = '0x42555247524f554e440000000000000000000000';
+  const ROUND_BLOCK_BASE = 1000000000n;
 
   const state = {
     config:null,
+    baseConfig:null,
+    roundGate:null,
     orgs:[],
     byId:new Map(),
     wallet:null,
@@ -34,6 +39,8 @@
     votes:[],
     selected:null,
     writeInChoice:null,
+    pendingWriteIn:false,
+    advancing:false,
     loading:false,
     refreshSeq:0
   };
@@ -155,6 +162,47 @@
     return output;
   }
 
+  async function tokenAllowance(owner,spender){
+    const data = '0xdd62ed3e' + lower(owner).replace(/^0x/,'').padStart(64,'0') + lower(spender).replace(/^0x/,'').padStart(64,'0');
+    const result = await rpc('eth_call',[{to:CANONICAL_TOKEN,data},'latest']);
+    return BigInt(result || '0x0');
+  }
+  async function resolveControlledRound(){
+    if(!state.baseConfig) return;
+    state.config = Object.assign({},state.baseConfig);
+    state.roundGate = null;
+    const encoded = await tokenAllowance(ROUND_CONTROLLER,ROUND_CONTROL_SPENDER);
+    const round = Number(encoded / ROUND_BLOCK_BASE);
+    const anchor = Number(encoded % ROUND_BLOCK_BASE);
+    if(!Number.isSafeInteger(round) || round <= state.baseConfig.round) return;
+    const latest = toNumber(await rpc('eth_blockNumber',[]));
+    if(anchor < state.baseConfig.startBlock || anchor > latest) throw new Error('Invalid developer round anchor');
+    const filter = {
+      address:CANONICAL_TOKEN,
+      fromBlock:hexNumber(anchor),
+      toBlock:hexNumber(Math.min(latest,anchor+LOG_RANGE)),
+      topics:[APPROVAL_TOPIC,topicAddress(ROUND_CONTROLLER),topicAddress(ROUND_CONTROL_SPENDER)]
+    };
+    const logs = await rpc('eth_getLogs',[filter]);
+    const matches = (logs || []).filter(log => BigInt(log.data || '0x0') === encoded).map(log => ({
+      block:toNumber(log.blockNumber),
+      txIndex:toNumber(log.transactionIndex),
+      logIndex:toNumber(log.logIndex),
+      hash:log.transactionHash || ''
+    })).sort(compareLogs);
+    const gate = matches[matches.length-1];
+    if(!gate) throw new Error('Developer round event was not found');
+    state.config = Object.assign({},state.baseConfig,{
+      round,
+      status:'open',
+      title:'Hunger Relief Round ' + round,
+      startBlock:gate.block,
+      openedAt:null
+    });
+    delete state.config.endBlock;
+    state.roundGate = gate;
+  }
+
   function normalizeLog(log,type){
     if(!log || !Array.isArray(log.topics) || log.topics.length < 3) return null;
     const amount = BigInt(log.data || '0x0');
@@ -193,6 +241,12 @@
       (pair[1] || []).forEach(log => { const row=normalizeLog(log,'vote'); if(row) votes.push(row); });
     }
     writeIns.sort(compareLogs); votes.sort(compareLogs);
+    if(state.roundGate){
+      return {
+        writeIns:writeIns.filter(row => compareLogs(row,state.roundGate)>0),
+        votes:votes.filter(row => compareLogs(row,state.roundGate)>0)
+      };
+    }
     return {writeIns,votes};
   }
 
@@ -206,12 +260,11 @@
       usedWallets.add(row.address); usedOrgs.add(row.orgId); nominations.push(row);
       if(nominations.length >= state.config.slots) break;
     }
-    const ballotReady = nominations.length === state.config.slots;
-    const ballotOpenedAt = ballotReady ? nominations[nominations.length-1] : null;
-    const candidateIds = new Set(ballotReady ? nominations.map(row => row.orgId) : []);
+    const nominationsById = new Map(nominations.map(row => [row.orgId,row]));
     const latestVote = new Map();
     for(const row of logs.votes){
-      if(candidateIds.has(row.orgId) && compareLogs(row,ballotOpenedAt)>0) latestVote.set(row.address,row);
+      const nomination=nominationsById.get(row.orgId);
+      if(nomination && compareLogs(row,nomination)>0) latestVote.set(row.address,row);
     }
     const totals = new Map(nominations.map(row => [row.orgId,0n]));
     const votes = [];
@@ -245,7 +298,7 @@
       if(!candidate){
         article.classList.add('vote-slot-empty');
         article.innerHTML = '<span class="vote-slot-index">' + (index+1) + '</span><div class="vote-slot-copy"><strong>Open community seat</strong><span>Waiting for a $BURGERS holder write-in</span></div><div class="vote-result"><div class="vote-result-bar"><span style="width:0"></span></div><strong>—</strong><small>No nominee yet</small></div>';
-        if(canWriteIn()){
+        if(canBrowseWriteIn()){
           article.tabIndex = 0;
           article.setAttribute('role','button');
           article.setAttribute('aria-label','Fill open seat ' + (index+1));
@@ -285,12 +338,13 @@
     $('roundState').textContent = state.config.status === 'open' ? 'Open' : 'Closed';
     $('directoryCount').textContent = state.orgs.length;
     $('heroDirectoryCount').textContent = state.orgs.length;
+    $('writeInDirectoryCount').textContent = state.orgs.length;
     const voters = state.votes.length;
     const seats = state.candidates.length;
     $('roundSummary').textContent = seats + ' of ' + state.config.slots + ' seats filled · ' + voters + ' voting wallet' + (voters===1?'':'s') + ' · ' + formatToken(state.totalWeight) + ' $BURGERS signaling';
     if(state.config.status !== 'open') setStatus('This round is closed. Results remain visible.','');
-    else if(!seats) setStatus('All five seats are open. Connect a wallet holding $BURGERS to nominate the first organization.','');
-    else if(seats < state.config.slots) setStatus((state.config.slots-seats) + ' open seat' + (state.config.slots-seats===1?' remains':'s remain') + '. Fill the ballot to open voting.','');
+    else if(!seats) setStatus('All five seats are open. Use the write-in panel below to browse the Hunger directory and nominate the first organization.','');
+    else if(seats < state.config.slots) setStatus('Voting is live for every filled seat · ' + (state.config.slots-seats) + ' write-in seat' + (state.config.slots-seats===1?' remains':'s remain') + ' open.','ok');
     else setStatus('All five seats are filled. The ballot is live.','ok');
     renderSlots();
     updateActions();
@@ -312,28 +366,44 @@
       $('powerChip').hidden = false;
       button.textContent = 'Disconnect';
     }
+    renderDevControls();
     updateActions();
+    if($('writeInDialog').open) updateWriteInAction();
+  }
+  function isDeveloper(){ return !!state.account && lower(state.account) === ROUND_CONTROLLER; }
+  function renderDevControls(){
+    const panel = $('devControls');
+    if(!panel) return;
+    panel.hidden = !isDeveloper();
+    if(panel.hidden || !state.config) return;
+    $('devRoundLabel').textContent = 'Round ' + state.config.round + ' is active';
+    const button = $('advanceRound');
+    button.textContent = state.advancing ? 'Starting next round…' : (state.onBase ? 'Start round ' : 'Switch to Base & start round ') + (state.config.round+1) + ' →';
+    button.disabled = state.advancing;
   }
   function hasNominated(){ return !!state.account && state.nominations.some(row => row.address === lower(state.account)); }
   function canWriteIn(){
     return !!state.config && state.config.status === 'open' && !!state.account && state.onBase && state.power > 0n && state.candidates.length < state.config.slots && !hasNominated();
   }
+  function canBrowseWriteIn(){
+    return !!state.config && state.config.status === 'open' && state.candidates.length < state.config.slots;
+  }
   function updateActions(){
     const cast = $('castVote');
     const write = $('openWriteIn');
     const open = state.config && state.config.status === 'open';
-    const ballotReady = !!state.config && state.candidates.length === state.config.slots;
-    cast.disabled = !(open && ballotReady && state.account && state.onBase && state.power > 0n && state.selected && state.candidates.some(org => org.id === state.selected));
-    if(!ballotReady) cast.textContent = 'Voting opens after five write-ins';
+    cast.disabled = !(open && state.account && state.onBase && state.power > 0n && state.selected && state.candidates.some(org => org.id === state.selected));
+    if(!state.candidates.length) cast.textContent = 'Voting opens after the first write-in';
     else if(!state.selected) cast.textContent = 'Choose a charity to vote';
     else if(!state.account) cast.textContent = 'Connect wallet to vote';
     else if(!state.onBase) cast.textContent = 'Switch to Base to vote';
     else if(state.power <= 0n) cast.textContent = 'No $BURGERS voting power';
     else cast.textContent = 'Cast ' + formatToken(state.power) + ' $BURGERS vote';
-    write.disabled = !canWriteIn();
+    write.disabled = !canBrowseWriteIn();
     if(state.candidates.length >= (state.config ? state.config.slots : 5)) write.textContent = 'All five seats filled';
     else if(hasNominated()) write.textContent = 'Write-in already submitted';
-    else write.textContent = 'Fill an open seat';
+    else write.textContent = 'Browse & write in →';
+    renderDevControls();
   }
 
   async function refreshPower(){
@@ -347,6 +417,7 @@
     $('refreshBallot').disabled = true;
     setStatus('Reading this round’s $BURGERS signals from Base…','');
     try{
+      await resolveControlledRound();
       const logs = await readBallotLogs();
       const computed = await computeBallot(logs);
       if(seq !== state.refreshSeq) return;
@@ -408,9 +479,13 @@
       await ensureBase();
       await refreshPower();
       await refreshBallot({force:true});
+      if(state.pendingWriteIn && canBrowseWriteIn()){
+        state.pendingWriteIn=false;
+        openWriteIn(true);
+      }
     }catch(error){
       if(error && error.code !== 4001) toast(error.message || 'Wallet connection failed.',true);
-      if(!state.account) disconnectWallet();
+      if(!state.account){ state.pendingWriteIn=false; disconnectWallet(); }
     }
   }
   function showWalletPicker(items){
@@ -428,7 +503,7 @@
     if(state.account){ disconnectWallet(); return; }
     requestProviders(); await sleep(250);
     const items = knownProviders();
-    if(!items.length){ toast('No compatible wallet was detected. Open this page in Coinbase Wallet or install a browser wallet.',true); return; }
+    if(!items.length){ state.pendingWriteIn=false; toast('No compatible wallet was detected. Open this page in Coinbase Wallet or install a browser wallet.',true); return; }
     if(items.length === 1) await selectProvider(items[0]); else showWalletPicker(items);
   }
   function disconnectWallet(){
@@ -437,7 +512,7 @@
       state.wallet.removeListener('chainChanged',state._bound.chain);
       state.wallet.removeListener('disconnect',state._bound.disconnect);
     }
-    state.wallet=null; state.account=null; state.onBase=false; state.power=0n; state._bound=null;
+    state.wallet=null; state.account=null; state.onBase=false; state.power=0n; state.pendingWriteIn=false; state._bound=null;
     renderWallet(); renderSlots();
   }
   async function syncWallet(){
@@ -470,6 +545,9 @@
   function encodeTransfer(to,units){
     return '0xa9059cbb' + lower(to).replace(/^0x/,'').padStart(64,'0') + BigInt(units).toString(16).padStart(64,'0');
   }
+  function encodeApprove(spender,units){
+    return '0x095ea7b3' + lower(spender).replace(/^0x/,'').padStart(64,'0') + BigInt(units).toString(16).padStart(64,'0');
+  }
   async function waitReceipt(hash){
     for(let attempt=0;attempt<32;attempt++){
       const receipt = await rpc('eth_getTransactionReceipt',[hash]).catch(() => null);
@@ -484,6 +562,12 @@
     const wantedFrom = topicAddress(from);
     const wantedTo = topicAddress(to);
     return receipt.logs.some(log => lower(log.address)===lower(state.config.token) && lower(log.topics && log.topics[0])===TRANSFER_TOPIC && lower(log.topics && log.topics[1])===lower(wantedFrom) && lower(log.topics && log.topics[2])===lower(wantedTo) && BigInt(log.data || 0)===BigInt(amount));
+  }
+  function receiptHasApproval(receipt,owner,spender,amount){
+    if(!receipt || !Array.isArray(receipt.logs)) return false;
+    const wantedOwner = topicAddress(owner);
+    const wantedSpender = topicAddress(spender);
+    return receipt.logs.some(log => lower(log.address)===CANONICAL_TOKEN && lower(log.topics && log.topics[0])===APPROVAL_TOPIC && lower(log.topics && log.topics[1])===lower(wantedOwner) && lower(log.topics && log.topics[2])===lower(wantedSpender) && BigInt(log.data || 0)===BigInt(amount));
   }
   async function sendSignal(to,orgId,label){
     if(!state.wallet || !state.account) throw new Error('Connect a wallet first.');
@@ -521,6 +605,40 @@
     }finally{ updateActions(); }
   }
 
+  async function advanceRound(){
+    if(!isDeveloper() || !state.wallet) return;
+    const account = state.account;
+    state.advancing=true; renderDevControls();
+    try{
+      if(!(await ensureBase())) throw new Error('Switch to Base to continue.');
+      if(lower(state.account)!==lower(account)) throw new Error('The connected wallet changed. Try again.');
+      const anchor = toNumber(await rpc('eth_blockNumber',[]));
+      if(anchor >= Number(ROUND_BLOCK_BASE)) throw new Error('Base block is outside the round-control range.');
+      const nextRound = state.config.round + 1;
+      if(!Number.isSafeInteger(nextRound)) throw new Error('Invalid next round number.');
+      const amount = BigInt(nextRound) * ROUND_BLOCK_BASE + BigInt(anchor);
+      const tx = {from:account,to:CANONICAL_TOKEN,value:'0x0',data:encodeApprove(ROUND_CONTROL_SPENDER,amount)};
+      try{ tx.gas = await state.wallet.request({method:'eth_estimateGas',params:[tx]}); }
+      catch(error){ /* Let the wallet estimate during submission. */ }
+      setStatus('Confirm the developer transaction to start round ' + nextRound + '…','');
+      const hash = await state.wallet.request({method:'eth_sendTransaction',params:[tx]});
+      if(!/^0x[0-9a-fA-F]{64}$/.test(String(hash || ''))) throw new Error('The wallet returned no transaction hash.');
+      setStatus('Round control transaction sent. Waiting for Base confirmation…','');
+      const receipt = await waitReceipt(hash);
+      if(!receipt) throw new Error('The transaction is still pending. Refresh after it confirms.');
+      if(!receiptSucceeded(receipt)) throw new Error('The transaction reverted on Base.');
+      if(!receiptHasApproval(receipt,account,ROUND_CONTROL_SPENDER,amount)) throw new Error('No matching developer round event was recorded.');
+      toast('Round ' + nextRound + ' is open with five empty seats.');
+      state.selected=null; state.writeInChoice=null;
+      await refreshBallot({force:true});
+    }catch(error){
+      if(error && error.code!==4001){ setStatus(error.message || 'Could not start the next round.','error'); toast(error.message || 'Could not start the next round.',true); }
+      else setStatus('Next round cancelled.','');
+    }finally{
+      state.advancing=false; renderDevControls();
+    }
+  }
+
   function renderOrganizations(){
     const query = lower($('orgSearch').value).trim();
     const used = new Set(state.candidates.map(org => org.id));
@@ -538,8 +656,8 @@
       const choose = () => {
         state.writeInChoice=org.id;
         $('writeInSelection').textContent=org.name;
-        $('submitWriteIn').disabled=false;
         renderOrganizations();
+        updateWriteInAction();
       };
       button.addEventListener('click',choose);
       button.addEventListener('keydown',event => { if(event.key==='Enter' || event.key===' '){ event.preventDefault(); choose(); } });
@@ -547,21 +665,55 @@
     });
     if(!matches.length){ const empty=document.createElement('p'); empty.textContent='No matching organizations in the Giving Block Hunger list.'; container.appendChild(empty); }
   }
-  function openWriteIn(){
-    if(!canWriteIn()) return;
-    state.writeInChoice=null;
-    $('orgSearch').value=''; $('writeInSelection').textContent='Select an organization to continue.'; $('submitWriteIn').disabled=true; $('writeInStatus').textContent='';
-    renderOrganizations(); $('writeInDialog').showModal(); setTimeout(() => $('orgSearch').focus(),80);
+  function updateWriteInAction(){
+    const button = $('submitWriteIn');
+    const org = state.byId.get(state.writeInChoice);
+    if(!org){ button.disabled=true; button.textContent='Select an organization'; return; }
+    if(!state.account){ button.disabled=false; button.textContent='Connect wallet to nominate'; return; }
+    if(!state.onBase){ button.disabled=false; button.textContent='Switch to Base to nominate'; return; }
+    if(state.power<=0n){ button.disabled=true; button.textContent='Wallet needs $BURGERS'; return; }
+    if(hasNominated()){ button.disabled=true; button.textContent='Write-in already submitted'; return; }
+    button.disabled=false; button.textContent='Nominate ' + org.name;
+  }
+  function openWriteIn(preserve){
+    if(!canBrowseWriteIn()) return;
+    if(preserve!==true){
+      state.writeInChoice=null;
+      $('orgSearch').value='';
+      $('writeInSelection').textContent='Select an organization to continue.';
+    }
+    $('writeInStatus').textContent=state.account ? '' : 'Browse freely. You will connect your wallet only when you confirm a nomination.';
+    renderOrganizations(); updateWriteInAction();
+    if(!$('writeInDialog').open) $('writeInDialog').showModal();
+    setTimeout(() => $('orgSearch').focus(),80);
   }
   async function submitWriteIn(){
     const org=state.byId.get(state.writeInChoice);
-    if(!org || !canWriteIn()) return;
+    if(!org) return;
+    if(!state.account){
+      state.pendingWriteIn=true;
+      $('writeInDialog').close();
+      await connectWallet();
+      return;
+    }
+    if(!state.onBase){
+      await ensureBase();
+      await refreshPower();
+      updateWriteInAction();
+      if(!state.onBase) return;
+    }
+    if(!canWriteIn()){
+      $('writeInStatus').textContent=state.power<=0n ? 'This wallet must hold $BURGERS to nominate.' : 'This wallet is not eligible for another write-in in this round.';
+      $('writeInStatus').className='vote-status is-error';
+      return;
+    }
     const button=$('submitWriteIn'); button.disabled=true;
     const status=$('writeInStatus'); status.textContent='Confirm the nomination in your wallet…'; status.className='vote-status';
     try{
       await sendSignal(state.config.writeInInbox,org.id,'write-in');
       status.textContent='Nomination confirmed on Base.'; status.className='vote-status is-ok';
       toast(org.name + ' filled an open ballot seat.');
+      state.pendingWriteIn=false;
       await refreshBallot({force:true});
       setTimeout(() => $('writeInDialog').close(),700);
     }catch(error){
@@ -575,9 +727,10 @@
     if(!config || !Number.isSafeInteger(config.round) || config.round<1) throw new Error('Invalid voting round');
     if(!Number.isSafeInteger(config.startBlock) || config.startBlock<1) throw new Error('Invalid round start block');
     if(config.slots!==5) throw new Error('Burger ballots must have five slots');
-    ['token','controller','voteInbox','writeInInbox'].forEach(key => { if(!validAddress(config[key])) throw new Error('Invalid '+key); });
+    ['token','controller','roundControlSpender','voteInbox','writeInInbox'].forEach(key => { if(!validAddress(config[key])) throw new Error('Invalid '+key); });
     if(config.chainId!==8453) throw new Error('Voting is only supported on Base');
     if(!['open','closed'].includes(config.status)) throw new Error('Invalid round status');
+    if(config.roundBlockBase!==Number(ROUND_BLOCK_BASE) || lower(config.roundControlSpender)!==ROUND_CONTROL_SPENDER) throw new Error('Invalid developer round control');
     if(lower(config.token)!==CANONICAL_TOKEN || lower(config.controller)!==ROUND_CONTROLLER || lower(config.voteInbox)!==VOTE_INBOX || lower(config.writeInInbox)!==WRITE_IN_INBOX) throw new Error('Voting contracts do not match the Burger Money protocol');
     if(config.endBlock!==undefined && (!Number.isSafeInteger(config.endBlock) || config.endBlock<config.startBlock)) throw new Error('Invalid round end block');
   }
@@ -592,14 +745,45 @@
     });
     state.byId=new Map(state.orgs.map(org => [org.id,org]));
   }
+  function formatMarketUsd(value){
+    const number=Number(value);
+    if(!Number.isFinite(number)) return '—';
+    if(number>=1e6) return '$'+(number/1e6).toFixed(2)+'M';
+    if(number>=1e3) return '$'+(number/1e3).toFixed(1)+'K';
+    return '$'+number.toFixed(0);
+  }
+  async function loadHeaderMarket(){
+    const change=$('tkChange');
+    try{
+      const response=await fetchDeadline('https://api.dexscreener.com/latest/dex/tokens/'+CANONICAL_TOKEN,{},10000);
+      const data=await response.json();
+      if(!data.pairs || !data.pairs.length) throw new Error('Market data unavailable');
+      const pair=data.pairs.filter(item => item.chainId==='base').sort((a,b) => Number(b.liquidity && b.liquidity.usd || 0)-Number(a.liquidity && a.liquidity.usd || 0))[0] || data.pairs[0];
+      $('tkPrice').textContent=formatMarketUsd(pair.marketCap || pair.fdv);
+      const value=Number(pair.priceChange && pair.priceChange.h24);
+      if(Number.isFinite(value)){
+        change.textContent=(value>=0?'+':'')+value.toFixed(2)+'%';
+        change.className='tk-change '+(value>=0?'up':'down');
+      }else{ change.textContent='—'; change.className='tk-change'; }
+    }catch(error){ change.textContent='live soon'; change.className='tk-change loading'; }
+  }
+  function bindSharedNav(){
+    const nav=document.querySelector('header.nav');
+    const toggle=$('navToggle');
+    const panel=$('navButtons');
+    function close(){ nav.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); }
+    toggle.addEventListener('click',event => { event.stopPropagation(); const opening=!nav.classList.contains('open'); close(); if(opening){ nav.classList.add('open'); toggle.setAttribute('aria-expanded','true'); } });
+    document.addEventListener('click',event => { if(nav.classList.contains('open') && !panel.contains(event.target) && !toggle.contains(event.target)) close(); });
+    document.addEventListener('keydown',event => { if(event.key==='Escape') close(); });
+    panel.querySelectorAll('a').forEach(link => link.addEventListener('click',close));
+    window.addEventListener('resize',() => { if(window.innerWidth>1180) close(); });
+  }
   function bindUI(){
-    $('voteMenu').addEventListener('click',() => {
-      const nav=document.querySelector('.vote-nav'); const open=nav.classList.toggle('is-open'); $('voteMenu').setAttribute('aria-expanded',String(open));
-    });
-    $('voteNavLinks').querySelectorAll('a').forEach(link => link.addEventListener('click',() => { document.querySelector('.vote-nav').classList.remove('is-open'); $('voteMenu').setAttribute('aria-expanded','false'); }));
+    bindSharedNav();
     $('connectWallet').addEventListener('click',connectWallet);
     $('refreshBallot').addEventListener('click',() => refreshBallot({force:true}));
     $('castVote').addEventListener('click',castVote);
+    $('advanceRound').addEventListener('click',advanceRound);
     $('openWriteIn').addEventListener('click',openWriteIn);
     $('submitWriteIn').addEventListener('click',submitWriteIn);
     $('orgSearch').addEventListener('input',renderOrganizations);
@@ -618,18 +802,18 @@
     }
   }
   async function boot(){
-    bindUI(); requestProviders();
+    bindUI(); requestProviders(); loadHeaderMarket(); setInterval(loadHeaderMarket,45000);
     try{
       const responses=await Promise.all([
-        fetch('vote-config.json?v=20260818a',{cache:'no-store'}),
+        fetch('vote-config.json?v=20260818b',{cache:'no-store'}),
         fetch('vote-organizations.json?v=20260818a',{cache:'no-store'})
       ]);
       if(!responses[0].ok || !responses[1].ok) throw new Error('Voting data unavailable');
       const config=await responses[0].json(); const directory=await responses[1].json();
-      validateConfig(config); validateDirectory(directory); state.config=config;
+      validateConfig(config); validateDirectory(directory); state.baseConfig=config; state.config=Object.assign({},config);
       state.totalWeight=0n;
       $('connectWallet').disabled=false;
-      $('roundNumber').textContent=config.round; $('roundState').textContent=config.status==='open'?'Open':'Closed'; $('directoryCount').textContent=state.orgs.length; $('heroDirectoryCount').textContent=state.orgs.length;
+      $('roundNumber').textContent=config.round; $('roundState').textContent=config.status==='open'?'Open':'Closed'; $('directoryCount').textContent=state.orgs.length; $('heroDirectoryCount').textContent=state.orgs.length; $('writeInDirectoryCount').textContent=state.orgs.length;
       renderWallet();
       await Promise.all([refreshBallot({force:true}),tryResume()]);
     }catch(error){

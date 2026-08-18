@@ -1,24 +1,20 @@
 # Burger Money voting rounds
 
-The public ballot is controlled by `vote-config.json`. Only a repository release can open, close, or replace a round; holders cannot create or extend one.
+Round advancement is controlled on Base by the project developer wallet, `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5`. Holders cannot create, replace, or skip rounds.
 
-Keep `controller` set to the project developer wallet, `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5`. The client rejects a configuration that changes the canonical token, developer wallet, or protocol inboxes.
+## Start the next round
 
-## Open a new round
+1. Open `/vote.html` in a browser with the developer wallet available.
+2. Select **Connect wallet** and approve the Base network switch if needed.
+3. Use the developer-only panel and select **Start round N →**.
+4. Confirm the token approval transaction. No $BURGERS is transferred.
+5. After Base confirms the transaction, the page opens the next numbered round with five empty write-in seats.
 
-1. Increase `round` by one.
-2. Keep `slots` at `5` so the round opens with five empty community seats.
-3. Set `status` to `open`, update `title` and `openedAt`, and set `startBlock` to the current Base block immediately before release.
-4. Remove any prior `endBlock` value.
-5. Publish the site and verify `/vote.html` shows the new round with five open seats.
+The approval grants only a microscopic encoded allowance to the dedicated, unreachable round-control address. Its value stores the next round number and a Base block anchor. The page verifies the `Approval` event came from the configured developer wallet, uses the confirmed event as the new round boundary, and ignores any nomination or vote that predates it.
 
-Never reuse a prior round number. Nomination and vote transfers encode a choice as `round * 1000 + organizationId` token wei, so the round number is part of the permanent public record.
+`vote-config.json` remains the immutable seed and safety configuration for the ballot. The client rejects changes to the canonical token, developer wallet, round-control address, encoding base, or nomination and voting inboxes.
 
-## Close a round
-
-1. Set `status` to `closed`.
-2. Add `endBlock` using the Base block at the intended close time.
-3. Publish. The page will preserve the final result and disable nominations and voting.
+Never reuse a prior round number. Nomination and vote transfers encode a choice as `round * 1000 + organizationId` token wei, so every signal remains attributable to its original round.
 
 ## Directory updates
 

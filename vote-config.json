@@ -8,6 +8,8 @@
   "chainId": 8453,
   "token": "0x06A05043eb2C1691b19c2C13219dB9212269dDc5",
   "controller": "0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5",
+  "roundControlSpender": "0x42555247524F554E440000000000000000000000",
+  "roundBlockBase": 1000000000,
   "voteInbox": "0x42555247564F5445000000000000000000000000",
   "writeInInbox": "0x4255524757524954450000000000000000000000",
   "organizationSource": "vote-organizations.json",
