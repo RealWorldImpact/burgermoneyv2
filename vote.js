@@ -195,7 +195,7 @@
     state.config = Object.assign({},state.baseConfig,{
       round,
       status:'open',
-      title:'Hunger Relief Round ' + round,
+      title:'Hunger Relief Community Ballot',
       startBlock:gate.block,
       openedAt:null
     });
@@ -297,11 +297,11 @@
       article.className = 'vote-slot';
       if(!candidate){
         article.classList.add('vote-slot-empty');
-        article.innerHTML = '<span class="vote-slot-index">' + (index+1) + '</span><div class="vote-slot-copy"><strong>Open community seat</strong><span>Waiting for a $BURGERS holder write-in</span></div><div class="vote-result"><div class="vote-result-bar"><span style="width:0"></span></div><strong>—</strong><small>No nominee yet</small></div>';
+        article.innerHTML = '<img class="vote-slot-logo" src="icon-192.png" alt="" width="52" height="52"><div class="vote-slot-copy"><strong>Open community seat</strong><span>Waiting for a $BURGERS holder write-in</span></div><div class="vote-result"><div class="vote-result-bar"><span style="width:0"></span></div><strong>—</strong><small>No nominee yet</small></div>';
         if(canBrowseWriteIn()){
           article.tabIndex = 0;
           article.setAttribute('role','button');
-          article.setAttribute('aria-label','Fill open seat ' + (index+1));
+          article.setAttribute('aria-label','Fill an open community seat');
           article.addEventListener('click',openWriteIn);
           article.addEventListener('keydown',event => { if(event.key==='Enter' || event.key===' '){ event.preventDefault(); openWriteIn(); } });
         }
@@ -316,9 +316,10 @@
       article.setAttribute('aria-label',candidate.name + ', ' + percent + ', ' + formatToken(candidate.total) + ' BURGERS');
       if(state.selected === candidate.id) article.classList.add('is-selected');
       if(myVote && myVote.orgId === candidate.id) article.classList.add('is-mine');
-      article.innerHTML = '<span class="vote-slot-index">' + (index+1) + '</span>' +
-        '<div class="vote-slot-copy"><strong></strong><span><b></b><a target="_blank" rel="noopener">Giving Block ↗</a></span></div>' +
+      article.innerHTML = '<img class="vote-slot-logo" alt="" width="52" height="52" loading="lazy" decoding="async">' +
+        '<div class="vote-slot-copy"><strong></strong><span><b></b><a target="_blank" rel="noopener">Giving Block profile ↗</a></span></div>' +
         '<div class="vote-result"><div class="vote-result-bar"><span></span></div><strong></strong><small></small></div>';
+      article.querySelector('.vote-slot-logo').src = candidate.logo;
       article.querySelector('.vote-slot-copy strong').textContent = candidate.name;
       article.querySelector('.vote-slot-copy b').textContent = candidate.country;
       const link = article.querySelector('.vote-slot-copy a');
@@ -334,7 +335,6 @@
     }
   }
   function renderRound(){
-    $('roundNumber').textContent = state.config.round;
     $('roundState').textContent = state.config.status === 'open' ? 'Open' : 'Closed';
     $('directoryCount').textContent = state.orgs.length;
     $('heroDirectoryCount').textContent = state.orgs.length;
@@ -342,7 +342,7 @@
     const voters = state.votes.length;
     const seats = state.candidates.length;
     $('roundSummary').textContent = seats + ' of ' + state.config.slots + ' seats filled · ' + voters + ' voting wallet' + (voters===1?'':'s') + ' · ' + formatToken(state.totalWeight) + ' $BURGERS signaling';
-    if(state.config.status !== 'open') setStatus('This round is closed. Results remain visible.','');
+    if(state.config.status !== 'open') setStatus('This ballot is closed. Results remain visible.','');
     else if(!seats) setStatus('All five seats are open. Use the write-in panel below to browse the Hunger directory and nominate the first organization.','');
     else if(seats < state.config.slots) setStatus('Voting is live for every filled seat · ' + (state.config.slots-seats) + ' write-in seat' + (state.config.slots-seats===1?' remains':'s remain') + ' open.','ok');
     else setStatus('All five seats are filled. The ballot is live.','ok');
@@ -376,9 +376,9 @@
     if(!panel) return;
     panel.hidden = !isDeveloper();
     if(panel.hidden || !state.config) return;
-    $('devRoundLabel').textContent = 'Round ' + state.config.round + ' is active';
+    $('devRoundLabel').textContent = 'Current ballot is active';
     const button = $('advanceRound');
-    button.textContent = state.advancing ? 'Starting next round…' : (state.onBase ? 'Start round ' : 'Switch to Base & start round ') + (state.config.round+1) + ' →';
+    button.textContent = state.advancing ? 'Starting fresh ballot…' : (state.onBase ? 'Start fresh ballot →' : 'Switch to Base & start fresh ballot →');
     button.disabled = state.advancing;
   }
   function hasNominated(){ return !!state.account && state.nominations.some(row => row.address === lower(state.account)); }
@@ -415,7 +415,7 @@
     state.loading = true;
     const seq = ++state.refreshSeq;
     $('refreshBallot').disabled = true;
-    setStatus('Reading this round’s $BURGERS signals from Base…','');
+    setStatus('Reading this ballot’s $BURGERS signals from Base…','');
     try{
       await resolveControlledRound();
       const logs = await readBallotLogs();
@@ -620,20 +620,20 @@
       const tx = {from:account,to:CANONICAL_TOKEN,value:'0x0',data:encodeApprove(ROUND_CONTROL_SPENDER,amount)};
       try{ tx.gas = await state.wallet.request({method:'eth_estimateGas',params:[tx]}); }
       catch(error){ /* Let the wallet estimate during submission. */ }
-      setStatus('Confirm the developer transaction to start round ' + nextRound + '…','');
+      setStatus('Confirm the developer transaction to start a fresh ballot…','');
       const hash = await state.wallet.request({method:'eth_sendTransaction',params:[tx]});
       if(!/^0x[0-9a-fA-F]{64}$/.test(String(hash || ''))) throw new Error('The wallet returned no transaction hash.');
-      setStatus('Round control transaction sent. Waiting for Base confirmation…','');
+      setStatus('Ballot control transaction sent. Waiting for Base confirmation…','');
       const receipt = await waitReceipt(hash);
       if(!receipt) throw new Error('The transaction is still pending. Refresh after it confirms.');
       if(!receiptSucceeded(receipt)) throw new Error('The transaction reverted on Base.');
       if(!receiptHasApproval(receipt,account,ROUND_CONTROL_SPENDER,amount)) throw new Error('No matching developer round event was recorded.');
-      toast('Round ' + nextRound + ' is open with five empty seats.');
+      toast('A fresh ballot is open with five empty seats.');
       state.selected=null; state.writeInChoice=null;
       await refreshBallot({force:true});
     }catch(error){
-      if(error && error.code!==4001){ setStatus(error.message || 'Could not start the next round.','error'); toast(error.message || 'Could not start the next round.',true); }
-      else setStatus('Next round cancelled.','');
+      if(error && error.code!==4001){ setStatus(error.message || 'Could not start a fresh ballot.','error'); toast(error.message || 'Could not start a fresh ballot.',true); }
+      else setStatus('Fresh ballot cancelled.','');
     }finally{
       state.advancing=false; renderDevControls();
     }
@@ -649,10 +649,11 @@
       const button = document.createElement('div');
       button.tabIndex=0; button.className='vote-org' + (state.writeInChoice===org.id?' is-selected':'');
       button.setAttribute('role','option'); button.setAttribute('aria-selected',String(state.writeInChoice===org.id));
-      const flag=document.createElement('span'); flag.className='vote-org-flag'; flag.textContent=org.country;
-      const copy=document.createElement('span'); const strong=document.createElement('strong'); strong.textContent=org.name; const small=document.createElement('small'); small.textContent='Giving Block Hunger directory'; copy.append(strong,small);
-      const source=document.createElement('a'); source.href=org.url; source.target='_blank'; source.rel='noopener'; source.textContent='View ↗'; source.addEventListener('click',event => event.stopPropagation());
-      button.append(flag,copy,source);
+      const logo=document.createElement('img'); logo.className='vote-org-logo'; logo.src=org.logo; logo.alt=''; logo.width=54; logo.height=54; logo.loading='lazy'; logo.decoding='async';
+      logo.addEventListener('error',() => { logo.src='icon-192.png'; logo.classList.add('is-fallback'); },{once:true});
+      const copy=document.createElement('span'); const strong=document.createElement('strong'); strong.textContent=org.name; const small=document.createElement('small'); small.textContent=countryName(org.country)+' · Official Hunger listing'; copy.append(strong,small);
+      const source=document.createElement('a'); source.href=org.url; source.target='_blank'; source.rel='noopener'; source.textContent='View on The Giving Block ↗'; source.setAttribute('aria-label','View '+org.name+' on The Giving Block'); source.addEventListener('click',event => event.stopPropagation());
+      button.append(logo,copy,source);
       const choose = () => {
         state.writeInChoice=org.id;
         $('writeInSelection').textContent=org.name;
@@ -703,7 +704,7 @@
       if(!state.onBase) return;
     }
     if(!canWriteIn()){
-      $('writeInStatus').textContent=state.power<=0n ? 'This wallet must hold $BURGERS to nominate.' : 'This wallet is not eligible for another write-in in this round.';
+      $('writeInStatus').textContent=state.power<=0n ? 'This wallet must hold $BURGERS to nominate.' : 'This wallet is not eligible for another write-in on this ballot.';
       $('writeInStatus').className='vote-status is-error';
       return;
     }
@@ -739,9 +740,9 @@
     if(payload.organizations.length<1 || payload.organizations.length>=Number(ENCODE_BASE)) throw new Error('Organization directory is outside protocol limits');
     const seen=new Set();
     state.orgs=payload.organizations.map((item,index) => {
-      if(!item || typeof item.name!=='string' || !/^[A-Z]{2}$/.test(item.country) || !/^https:\/\/thegivingblock\.com\/donate\/[a-z0-9-]+$/.test(item.url)) throw new Error('Invalid organization entry');
+      if(!item || typeof item.name!=='string' || !/^[A-Z]{2}$/.test(item.country) || !/^https:\/\/thegivingblock\.com\/donate\/[a-z0-9-]+$/.test(item.url) || !/^charity-logos\/[a-z0-9-]+\.webp$/.test(item.logo)) throw new Error('Invalid organization entry');
       const slug=slugFromUrl(item.url); if(!slug || seen.has(slug)) throw new Error('Duplicate organization entry'); seen.add(slug);
-      return {id:index+1,slug,name:item.name,country:item.country,url:item.url};
+      return {id:index+1,slug,name:item.name,country:item.country,url:item.url,logo:item.logo};
     });
     state.byId=new Map(state.orgs.map(org => [org.id,org]));
   }
@@ -805,15 +806,15 @@
     bindUI(); requestProviders(); loadHeaderMarket(); setInterval(loadHeaderMarket,45000);
     try{
       const responses=await Promise.all([
-        fetch('vote-config.json?v=20260818b',{cache:'no-store'}),
-        fetch('vote-organizations.json?v=20260818a',{cache:'no-store'})
+        fetch('vote-config.json?v=20260818c',{cache:'no-store'}),
+        fetch('vote-organizations.json?v=20260818c',{cache:'no-store'})
       ]);
       if(!responses[0].ok || !responses[1].ok) throw new Error('Voting data unavailable');
       const config=await responses[0].json(); const directory=await responses[1].json();
       validateConfig(config); validateDirectory(directory); state.baseConfig=config; state.config=Object.assign({},config);
       state.totalWeight=0n;
       $('connectWallet').disabled=false;
-      $('roundNumber').textContent=config.round; $('roundState').textContent=config.status==='open'?'Open':'Closed'; $('directoryCount').textContent=state.orgs.length; $('heroDirectoryCount').textContent=state.orgs.length; $('writeInDirectoryCount').textContent=state.orgs.length;
+      $('roundState').textContent=config.status==='open'?'Open':'Closed'; $('directoryCount').textContent=state.orgs.length; $('heroDirectoryCount').textContent=state.orgs.length; $('writeInDirectoryCount').textContent=state.orgs.length;
       renderWallet();
       await Promise.all([refreshBallot({force:true}),tryResume()]);
     }catch(error){

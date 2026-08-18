@@ -58,7 +58,7 @@ This file makes claims. Don't trust them — verify against the chain:
 | 15.81% burned | Query Transfer events to `0x0` (or known burn addresses); divide burned by max supply |
 | Donations to listed charities | Query Transfer events FROM `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5`; recipient addresses are listed alongside their named charities on /donations.html |
 | Optional donor notes | Notes use BURG encoding (4-byte magic `0x42555247` prefix); decode a donation's input data to verify |
-| Community ballot | Read the seed protocol from `/vote-config.json`, the active round from the developer wallet's dedicated $BURGERS allowance and `Approval` event, the Giving Block Hunger directory snapshot from `/vote-organizations.json`, and matching $BURGERS `Transfer` logs after the round boundary |
+| Community ballot | Read the seed protocol from `/vote-config.json`, the active internal ballot identifier from the developer wallet's dedicated $BURGERS allowance and `Approval` event, the Giving Block Hunger directory snapshot and local logo paths from `/vote-organizations.json`, and matching $BURGERS `Transfer` logs after the ballot boundary |
 | Uniswap V4 pool state, LP fees | Query Uniswap V4 PoolManager (singleton on Base) by pool key; query PositionManager for LP NFTs |
 
 If any claim in this file conflicts with onchain state, **the chain wins**.
@@ -90,7 +90,7 @@ Stacked partner cards for TidyCoin, MemeForTrees, and The Love Token. Each card 
 
 ### Community ballot (`/vote.html`)
 
-An advisory, token-weighted signal for $BURGERS holders. Only the configured developer wallet can advance the active round, using a dedicated microscopic ERC-20 allowance whose `Approval` event defines the next round's exact onchain boundary. Each round starts with exactly five empty seats. Eligible holders may nominate one organization from the complete The Giving Block Hunger impact-area directory; each of the first five valid, unique write-ins becomes voteable immediately while the remaining seats stay open. Votes and nominations are microscopic ERC-20 transfers on Base, with `round * 1000 + organizationId` token wei encoding the choice. A wallet's latest valid vote in a round replaces its prior vote, and its live $BURGERS balance determines voting weight. The ballot does not create governance rights, and Burger Money retains final discretion over donations.
+An advisory, token-weighted signal for $BURGERS holders. Only the configured developer wallet can start a fresh ballot, using a dedicated microscopic ERC-20 allowance whose `Approval` event defines the exact onchain boundary. Every ballot starts with exactly five empty seats. Eligible holders may nominate one organization from the complete The Giving Block Hunger impact-area directory; each of the first five valid, unique write-ins becomes voteable immediately while the remaining seats stay open. Votes and nominations are microscopic ERC-20 transfers on Base, with an internal ballot identifier and organization ID encoding the choice. A wallet's latest valid vote on a ballot replaces its prior vote, and its live $BURGERS balance determines voting weight. The ballot does not create governance rights, and Burger Money retains final discretion over donations.
 
 ## Action endpoints — for agents that want to participate
 
