@@ -477,12 +477,12 @@
       article.className = 'vote-slot';
       if(!candidate){
         article.classList.add('vote-slot-empty');
-        article.innerHTML = '<span class="vote-slot-plus" aria-hidden="true">+</span><div class="vote-slot-copy"><strong>Open community seat</strong><span>Waiting for a $BURGERS holder write-in</span></div><span class="vote-seat-open"></span>';
-        article.querySelector('.vote-seat-open').textContent=canBrowseWriteIn()?'Write in →':'Unfilled';
+        article.innerHTML = '<span class="vote-slot-plus" aria-hidden="true"></span><div class="vote-slot-copy"><strong>Open community ballot</strong><span>Waiting for a $BURGERS holder write-in</span></div><span class="vote-ballot-open"></span>';
+        article.querySelector('.vote-ballot-open').textContent=canBrowseWriteIn()?'Write in →':'Unfilled';
         if(canBrowseWriteIn()){
           article.tabIndex = 0;
           article.setAttribute('role','button');
-          article.setAttribute('aria-label','Fill an open community seat');
+          article.setAttribute('aria-label','Fill an open community ballot');
           article.addEventListener('click',openWriteIn);
           article.addEventListener('keydown',event => { if(event.key==='Enter' || event.key===' '){ event.preventDefault(); openWriteIn(); } });
         }
@@ -582,12 +582,12 @@
     $('heroDirectoryCount').textContent = state.orgs.length;
     $('writeInDirectoryCount').textContent = state.orgs.length;
     const voters = state.votes.length;
-    const seats = state.candidates.length;
-    $('roundSummary').textContent = seats + ' of ' + state.config.slots + ' seats filled · ' + voters + ' voting wallet' + (voters===1?'':'s') + ' · ' + formatToken(state.totalWeight) + ' $BURGERS signaling';
-    if(state.config.status !== 'open') setStatus('This ballot is closed. Results remain visible.','');
-    else if(!seats) setStatus('All five seats are open. Use the write-in panel below to browse the Hunger directory and nominate the first organization.','');
-    else if(seats < state.config.slots) setStatus('Voting is live for every filled seat · ' + (state.config.slots-seats) + ' write-in seat' + (state.config.slots-seats===1?' remains':'s remain') + ' open.','ok');
-    else setStatus('All five seats are filled. The ballot is live.','ok');
+    const ballots = state.candidates.length;
+    $('roundSummary').textContent = ballots + ' of ' + state.config.slots + ' ballots filled · ' + voters + ' voting wallet' + (voters===1?'':'s') + ' · ' + formatToken(state.totalWeight) + ' $BURGERS signaling';
+    if(state.config.status !== 'open') setStatus('This voting round is closed. Results remain visible.','');
+    else if(!ballots) setStatus('All five ballots are open. Use the write-in panel below to browse the Hunger directory and nominate the first organization.','');
+    else if(ballots < state.config.slots) setStatus('Voting is live for every filled ballot · ' + (state.config.slots-ballots) + ' write-in ballot' + (state.config.slots-ballots===1?' remains':'s remain') + ' open.','ok');
+    else setStatus('All five ballots are filled. Voting is live.','ok');
     renderSlots();
     renderVoters();
     updateActions();
@@ -619,9 +619,9 @@
     if(!panel) return;
     panel.hidden = !isDeveloper();
     if(panel.hidden || !state.config) return;
-    $('devRoundLabel').textContent = 'Current ballot is active';
+    $('devRoundLabel').textContent = 'Current voting round is active';
     const button = $('advanceRound');
-    button.textContent = state.advancing ? 'Starting fresh ballot…' : (state.onBase ? 'Start fresh ballot →' : 'Switch to Base & start fresh ballot →');
+    button.textContent = state.advancing ? 'Starting fresh voting round…' : (state.onBase ? 'Start fresh voting round →' : 'Switch to Base & start fresh voting round →');
     button.disabled = state.advancing;
   }
   function hasNominated(){ return !!state.account && state.nominations.some(row => row.address === lower(state.account)); }
@@ -643,7 +643,7 @@
     else if(state.power <= 0n) cast.textContent = 'No $BURGERS voting power';
     else cast.textContent = 'Cast ' + formatToken(state.power) + ' $BURGERS vote';
     write.disabled = !canBrowseWriteIn();
-    if(state.candidates.length >= (state.config ? state.config.slots : 5)) write.textContent = 'All five seats filled';
+    if(state.candidates.length >= (state.config ? state.config.slots : 5)) write.textContent = 'All five ballots filled';
     else if(hasNominated()) write.textContent = 'Write-in already submitted';
     else write.textContent = 'Browse & write in →';
     renderDevControls();
@@ -865,20 +865,20 @@
       const tx = {from:account,to:CANONICAL_TOKEN,value:'0x0',data:encodeApprove(ROUND_CONTROL_SPENDER,amount)};
       try{ tx.gas = await state.wallet.request({method:'eth_estimateGas',params:[tx]}); }
       catch(error){ /* Let the wallet estimate during submission. */ }
-      setStatus('Confirm the developer transaction to start a fresh ballot…','');
+      setStatus('Confirm the developer transaction to start a fresh voting round…','');
       const hash = await state.wallet.request({method:'eth_sendTransaction',params:[tx]});
       if(!/^0x[0-9a-fA-F]{64}$/.test(String(hash || ''))) throw new Error('The wallet returned no transaction hash.');
-      setStatus('Ballot control transaction sent. Waiting for Base confirmation…','');
+      setStatus('Voting round transaction sent. Waiting for Base confirmation…','');
       const receipt = await waitReceipt(hash);
       if(!receipt) throw new Error('The transaction is still pending. Refresh after it confirms.');
       if(!receiptSucceeded(receipt)) throw new Error('The transaction reverted on Base.');
       if(!receiptHasApproval(receipt,account,ROUND_CONTROL_SPENDER,amount)) throw new Error('No matching developer round event was recorded.');
-      toast('A fresh ballot is open with five empty seats.');
+      toast('A fresh voting round is open with five empty ballots.');
       state.selected=null; state.writeInChoice=null;
       await refreshBallot({force:true});
     }catch(error){
-      if(error && error.code!==4001){ setStatus(error.message || 'Could not start a fresh ballot.','error'); toast(error.message || 'Could not start a fresh ballot.',true); }
-      else setStatus('Fresh ballot cancelled.','');
+      if(error && error.code!==4001){ setStatus(error.message || 'Could not start a fresh voting round.','error'); toast(error.message || 'Could not start a fresh voting round.',true); }
+      else setStatus('Fresh voting round cancelled.','');
     }finally{
       state.advancing=false; renderDevControls();
     }
@@ -958,7 +958,7 @@
     try{
       await sendSignal(state.config.writeInInbox,org.id,'write-in');
       status.textContent='Nomination confirmed on Base.'; status.className='vote-status is-ok';
-      toast(org.name + ' filled an open ballot seat.');
+      toast(org.name + ' filled an open ballot.');
       state.pendingWriteIn=false;
       await refreshBallot({force:true});
       setTimeout(() => $('writeInDialog').close(),700);

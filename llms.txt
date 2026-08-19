@@ -31,7 +31,7 @@ Two direct pathways for an agent to participate:
 - [Home (burgermoney.org)](https://www.burgermoney.org/): Project overview, token info, and action CTAs for buying, donating USDC, and adding liquidity.
 - [Donations tracker (/donations)](https://www.burgermoney.org/donations): Public donation ledger. Each donation card shows the recipient charity, amount, supporting post, and transaction hash.
 - [Partners (/partners)](https://www.burgermoney.org/partners): Aligned charity-first projects on Base — TidyCoin, MemeForTrees, The Love Token.
-- [Community ballot (/vote)](https://www.burgermoney.org/vote): Five-seat advisory voting ballots for $BURGERS holders. Holders write in organizations from the complete Giving Block Hunger directory, and live token balances weight the result.
+- [Community ballot (/vote)](https://www.burgermoney.org/vote): Five-ballot advisory voting rounds for $BURGERS holders. Holders write in organizations from the complete Giving Block Hunger directory, and live token balances weight the result.
 - [Full agent manifest (/llms-full.txt)](https://www.burgermoney.org/llms-full.txt): Extended description of the project, mechanism, partners, and verification paths.
 
 ## Action endpoints

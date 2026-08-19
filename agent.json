@@ -96,7 +96,7 @@
     {
       "id": "get-community-ballot",
       "name": "Get the current $BURGERS community ballot",
-      "description": "Returns the current five-seat advisory round configuration and the complete Giving Block Hunger directory snapshot. Results are reproducible from $BURGERS Transfer events on Base.",
+      "description": "Returns the current five-ballot advisory round configuration and the complete Giving Block Hunger directory snapshot. Results are reproducible from $BURGERS Transfer events on Base.",
       "tags": ["voting", "ballot", "charity", "hunger", "onchain"],
       "examples": [
         "Which organizations are on the current Burger Money ballot?",

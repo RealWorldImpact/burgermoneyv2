@@ -13,7 +13,7 @@ BurgerMoney.org is machine-readable by AI agents on Base and the broader agent w
 | `sitemap.xml` | site root → `/sitemap.xml` | Lists the page and all agent-discovery files |
 | `manifest.webmanifest` | site root → `/manifest.webmanifest` | PWA manifest (Base App / mobile installs) |
 | `.well-known/agent.json` | site root → `/.well-known/agent.json` | A2A Agent Card — 7 public information skills, including the current community ballot and Hunger directory snapshot. No auth required. |
-| `vote-config.json` | site root → `/vote-config.json` | Seed five-seat ballot plus canonical token, developer-wallet, internal ballot-control, and protocol addresses |
+| `vote-config.json` | site root → `/vote-config.json` | Seed five-ballot voting round plus canonical token, developer-wallet, internal ballot-control, and protocol addresses |
 | `vote-organizations.json` | site root → `/vote-organizations.json` | Giving Block Hunger impact-area directory snapshot and local official logo paths used for write-ins |
 | `.well-known/token.json` | site root → `/.well-known/token.json` | Canonical token metadata in machine-readable JSON |
 | `.well-known/farcaster.json` | site root → `/.well-known/farcaster.json` | Farcaster Mini App manifest with a signed `accountAssociation`. |

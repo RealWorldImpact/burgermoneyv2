@@ -10,7 +10,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Burger Money">
   <meta property="og:title" content="Vote with $BURGERS · Burger Money">
-  <meta property="og:description" content="Five open seats. Hunger-relief charities. A community signal weighted by the $BURGERS you hold.">
+  <meta property="og:description" content="Five open ballots. Hunger-relief charities. A community signal weighted by the $BURGERS you hold.">
   <meta property="og:url" content="https://www.burgermoney.org/vote">
   <meta property="og:image" content="https://www.burgermoney.org/og-burgers.png">
   <meta name="theme-color" content="#050713">
@@ -20,7 +20,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="design-overhaul.css?v=20260818aa">
-  <link rel="stylesheet" href="vote.css?v=20260818j">
+  <link rel="stylesheet" href="vote.css?v=20260818k">
 </head>
 <body class="page-vote">
   <a class="skip-link" href="#ballot">Skip to ballot</a>
@@ -55,7 +55,7 @@
       <div class="vote-hero-copy">
         <span class="vote-kicker"><img src="icon-192.png" alt="" width="22" height="22"> Community meal signal</span>
         <h1 id="voteTitle">Your bags.<br><em>Their meals.</em></h1>
-        <p>$BURGERS holders decide which Giving Block-listed hunger-relief organizations deserve the community’s attention next. Every ballot starts with five open seats, and each write-in becomes voteable as soon as it lands.</p>
+        <p>$BURGERS holders decide which Giving Block-listed hunger-relief organizations deserve the community’s attention next. Every voting round starts with five open ballots, and each write-in becomes voteable as soon as it lands.</p>
         <div class="vote-hero-actions">
           <a class="vote-btn vote-btn-primary" href="#ballot">Enter the ballot <span aria-hidden="true">↓</span></a>
           <a class="vote-btn vote-btn-quiet" href="#how">How it works</a>
@@ -65,7 +65,7 @@
         <div class="vote-board-orbit" aria-hidden="true"><img src="icon-192.png" alt="" width="104" height="104" decoding="async"></div>
         <p class="vote-mono">THE BURGER BALLOT</p>
         <strong>5</strong>
-        <span>community-filled seats</span>
+        <span>community-filled ballots</span>
         <div class="vote-board-stats">
           <div><b id="heroDirectoryCount">159</b><small>Hunger directory organizations</small></div>
           <div><b>Base</b><small>public onchain signals</small></div>
@@ -77,7 +77,7 @@
       <div class="vote-section-head">
         <div>
           <span class="vote-kicker vote-kicker-dark">Live community ballot</span>
-          <h2 id="ballotTitle">Five seats. Filled by holders.</h2>
+          <h2 id="ballotTitle">Five ballots. Filled by holders.</h2>
           <p id="roundSummary">Reading the current ballot from Burger Money…</p>
         </div>
         <div class="vote-ballot-stamp" aria-label="Current ballot status">
@@ -102,8 +102,8 @@
       </div>
 
       <aside class="vote-dev-control" id="devControls" hidden>
-        <div><span class="vote-mono">Developer control</span><strong id="devRoundLabel">Current ballot is active</strong><small>Start a fresh ballot with five empty seats. The current results remain permanently reproducible on Base.</small></div>
-        <button class="vote-btn vote-btn-dev" id="advanceRound" type="button">Start fresh ballot →</button>
+        <div><span class="vote-mono">Developer control</span><strong id="devRoundLabel">Current voting round is active</strong><small>Start a fresh voting round with five empty ballots. The current results remain permanently reproducible on Base.</small></div>
+        <button class="vote-btn vote-btn-dev" id="advanceRound" type="button">Start fresh voting round →</button>
       </aside>
 
       <div class="vote-status" id="ballotStatus" role="status" aria-live="polite">Loading onchain ballot activity…</div>
@@ -112,7 +112,7 @@
         <div><span class="vote-mono">Holder write-in</span><strong>Put a hunger organization on the ballot.</strong><small>Browse all <span id="writeInDirectoryCount">159</span> Giving Block Hunger listings. Connect your wallet only when you are ready to nominate.</small></div>
         <button class="vote-btn vote-btn-write" id="openWriteIn" type="button" disabled>Browse &amp; write in →</button>
       </aside>
-      <div class="vote-slots" id="voteSlots" role="group" aria-label="Current ballot candidates and open seats">
+      <div class="vote-slots" id="voteSlots" role="group" aria-label="Current candidates and open ballots">
         <article class="vote-slot vote-slot-loading"><span></span><span></span><span></span></article>
         <article class="vote-slot vote-slot-loading"><span></span><span></span><span></span></article>
         <article class="vote-slot vote-slot-loading"><span></span><span></span><span></span></article>
@@ -158,8 +158,8 @@
         </div>
       </div>
       <div class="vote-how-grid">
-        <article><h3>The dev wallet opens a ballot</h3><p>Only the configured Burger Money developer wallet can start a fresh onchain ballot with five empty community seats.</p></article>
-        <article><h3>Holders fill five seats</h3><p>A connected wallet with a positive $BURGERS balance may nominate one directory-listed organization. Each valid write-in becomes voteable immediately while the remaining seats stay open.</p></article>
+        <article><h3>The dev wallet opens a voting round</h3><p>Only the configured Burger Money developer wallet can start a fresh onchain voting round with five empty community ballots.</p></article>
+        <article><h3>Holders fill five ballots</h3><p>A connected wallet with a positive $BURGERS balance may nominate one directory-listed organization. Each valid write-in becomes voteable immediately while the remaining ballots stay open.</p></article>
         <article><h3>Latest vote wins per wallet</h3><p>Each vote is recorded as a tiny token transfer on Base. Sending another vote on the same ballot replaces the wallet’s prior choice.</p></article>
         <article><h3>Balances determine weight</h3><p>The page re-reads each voter’s live $BURGERS balance and recomputes totals in your browser. Wallets holding zero carry zero weight.</p></article>
       </div>
@@ -185,10 +185,10 @@
   <dialog class="vote-dialog" id="writeInDialog" aria-labelledby="writeInTitle">
     <form method="dialog" class="vote-dialog-shell">
       <div class="vote-dialog-head">
-        <div><span class="vote-kicker vote-kicker-dark">Holder write-in</span><h2 id="writeInTitle">Fill an open seat.</h2></div>
+        <div><span class="vote-kicker vote-kicker-dark">Holder write-in</span><h2 id="writeInTitle">Fill an open ballot.</h2></div>
         <button class="vote-dialog-close" type="button" aria-label="Close write-in picker">×</button>
       </div>
-      <p>Choose one organization from the complete Giving Block Hunger list. Each wallet may fill at most one seat per ballot.</p>
+      <p>Choose one organization from the complete Giving Block Hunger list. Each wallet may fill at most one ballot per voting round.</p>
       <label class="vote-search"><span>Search organizations</span><input id="orgSearch" type="search" autocomplete="off" placeholder="Try “food bank”, “meals”, or a country…"></label>
       <div class="vote-results-meta"><span id="orgResultsCount">159 organizations</span><a class="vote-results-source" href="https://thegivingblock.com/donate/" target="_blank" rel="noopener">The Giving Block Hunger directory ↗</a></div>
       <div class="vote-org-results" id="orgResults" role="listbox" aria-label="Hunger-relief organizations"></div>
@@ -209,6 +209,6 @@
 
   <div class="vote-toast" id="voteToast" role="status" aria-live="polite" hidden></div>
   <script src="site-effects.js?v=20260818d" defer></script>
-  <script src="vote.js?v=20260818j" defer></script>
+  <script src="vote.js?v=20260818k" defer></script>
 </body>
 </html>

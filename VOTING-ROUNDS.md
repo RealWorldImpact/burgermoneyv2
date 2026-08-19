@@ -1,14 +1,14 @@
 # Burger Money community ballots
 
-Ballot advancement is controlled on Base by the project developer wallet, `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5`. Holders cannot create, replace, or skip ballots.
+Voting-round advancement is controlled on Base by the project developer wallet, `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5`. Holders cannot create, replace, or skip voting rounds.
 
-## Start a fresh ballot
+## Start a fresh voting round
 
 1. Open `/vote` in a browser with the developer wallet available.
 2. Select **Connect wallet** and approve the Base network switch if needed.
-3. Use the developer-only panel and select **Start fresh ballot →**.
+3. Use the developer-only panel and select **Start fresh voting round →**.
 4. Confirm the token approval transaction. No $BURGERS is transferred.
-5. After Base confirms the transaction, the page opens a fresh ballot with five empty write-in seats.
+5. After Base confirms the transaction, the page opens a fresh voting round with five empty write-in ballots.
 
 The approval grants only a microscopic encoded allowance to the dedicated, unreachable ballot-control address. Its value stores an internal ballot identifier and a Base block anchor. The page verifies the `Approval` event came from the configured developer wallet, uses the confirmed event as the new ballot boundary, and ignores any nomination or vote that predates it. The identifier is deliberately not shown in the public interface.
 
