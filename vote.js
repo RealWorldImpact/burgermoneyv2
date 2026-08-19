@@ -541,7 +541,7 @@
 
       const identity=document.createElement('div'); identity.className='vote-voter-identity';
       const avatar=document.createElement('span'); avatar.className='vote-voter-avatar';
-      const avatarImage=document.createElement('img'); avatarImage.src=avatarUrl || 'icon-192.png'; avatarImage.alt=basename && avatarUrl ? basename+' avatar' : ''; avatarImage.width=56; avatarImage.height=56; avatarImage.decoding='async'; avatarImage.referrerPolicy='no-referrer';
+      const avatarImage=document.createElement('img'); avatarImage.src=avatarUrl || 'icon-192.png'; avatarImage.alt=basename && avatarUrl ? basename+' avatar' : ''; avatarImage.decoding='async'; avatarImage.referrerPolicy='no-referrer';
       if(!avatarUrl) avatarImage.classList.add('is-fallback');
       avatarImage.addEventListener('error',() => { avatarImage.src='icon-192.png'; avatarImage.alt=''; avatarImage.classList.add('is-fallback'); },{once:true});
       avatar.appendChild(avatarImage);
