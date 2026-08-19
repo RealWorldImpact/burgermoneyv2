@@ -361,8 +361,7 @@
     const votes = [];
     latestVote.forEach((row,address) => {
       const weight = balances.get(address) || 0n;
-      if(weight <= 0n) return;
-      totals.set(row.orgId,(totals.get(row.orgId) || 0n) + weight);
+      if(weight > 0n) totals.set(row.orgId,(totals.get(row.orgId) || 0n) + weight);
       votes.push(Object.assign({},row,{weight}));
     });
     return {
@@ -451,6 +450,7 @@
       const pending=state.basenamePending.has(address);
       const row=document.createElement('article');
       row.className='vote-voter'; row.setAttribute('role','listitem');
+      if(vote.weight<=0n) row.classList.add('is-zero');
 
       const identity=document.createElement('div'); identity.className='vote-voter-identity';
       const avatar=document.createElement('span'); avatar.className='vote-voter-avatar'; avatar.setAttribute('aria-hidden','true'); avatar.textContent=address.slice(2,4).toUpperCase();
@@ -470,7 +470,7 @@
 
       const weight=document.createElement('div'); weight.className='vote-voter-weight';
       const amount=document.createElement('strong'); amount.textContent=formatToken(vote.weight)+' $BURGERS';
-      const share=document.createElement('span'); share.textContent=formatPercent(vote.weight,state.totalWeight)+' of signal';
+      const share=document.createElement('span'); share.textContent=vote.weight>0n ? formatPercent(vote.weight,state.totalWeight)+' of signal' : 'No current voting weight';
       const transaction=document.createElement('a'); transaction.href='https://basescan.org/tx/'+vote.hash; transaction.target='_blank'; transaction.rel='noopener'; transaction.textContent='View vote ↗'; transaction.setAttribute('aria-label','View vote transaction on BaseScan');
       weight.append(amount,share,transaction);
       row.append(identity,choice,weight); container.appendChild(row);
