@@ -20,7 +20,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="design-overhaul.css?v=20260818aa">
-  <link rel="stylesheet" href="vote.css?v=20260818c">
+  <link rel="stylesheet" href="vote.css?v=20260818d">
 </head>
 <body class="page-vote">
   <a class="skip-link" href="#ballot">Skip to ballot</a>
@@ -112,7 +112,7 @@
         <div><span class="vote-mono">Holder write-in</span><strong>Put a hunger organization on the ballot.</strong><small>Browse all <span id="writeInDirectoryCount">159</span> Giving Block Hunger listings. Connect your wallet only when you are ready to nominate.</small></div>
         <button class="vote-btn vote-btn-write" id="openWriteIn" type="button" disabled>Browse &amp; write in →</button>
       </aside>
-      <div class="vote-slots" id="voteSlots" aria-label="Current ballot candidates">
+      <div class="vote-slots" id="voteSlots" role="group" aria-label="Current ballot candidates and open seats">
         <article class="vote-slot vote-slot-loading"><span></span><span></span><span></span></article>
         <article class="vote-slot vote-slot-loading"><span></span><span></span><span></span></article>
         <article class="vote-slot vote-slot-loading"><span></span><span></span><span></span></article>
@@ -124,6 +124,20 @@
         <button class="vote-btn vote-btn-primary" id="castVote" type="button" disabled>Choose a charity to vote</button>
         <button class="vote-btn vote-btn-quiet-dark" id="refreshBallot" type="button" disabled>Refresh results</button>
       </div>
+      <section class="vote-voters" aria-labelledby="votersTitle">
+        <div class="vote-voters-head">
+          <div>
+            <span class="vote-mono">Public voter ledger</span>
+            <h3 id="votersTitle">Who has voted</h3>
+            <p>Each wallet appears once with its latest choice and current $BURGERS balance.</p>
+          </div>
+          <span class="vote-voters-live" aria-live="polite"><i aria-hidden="true"></i><strong id="voterCount">0</strong> current <span id="voterCountLabel">voters</span></span>
+        </div>
+        <div class="vote-voter-list" id="voterList" role="list" aria-busy="true">
+          <div class="vote-voter-loading" role="listitem"><span></span><span></span><span></span></div>
+        </div>
+        <p class="vote-voters-note">Primary Base names are read from the official Basenames contracts. Wallet addresses remain visible so every signal can be independently verified.</p>
+      </section>
       <p class="vote-chain-note">A vote or write-in is a tiny $BURGERS transfer encoding your choice. The amount is less than one trillionth of one token; the only meaningful cost is Base gas. Re-voting replaces your previous choice.</p>
     </section>
 
@@ -195,6 +209,6 @@
 
   <div class="vote-toast" id="voteToast" role="status" aria-live="polite" hidden></div>
   <script src="site-effects.js?v=20260818d" defer></script>
-  <script src="vote.js?v=20260818c" defer></script>
+  <script src="vote.js?v=20260818d" defer></script>
 </body>
 </html>

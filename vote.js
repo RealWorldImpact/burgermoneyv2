@@ -22,6 +22,12 @@
   const WRITE_IN_INBOX = '0x4255524757524954450000000000000000000000';
   const ROUND_CONTROL_SPENDER = '0x42555247524f554e440000000000000000000000';
   const ROUND_BLOCK_BASE = 1000000000n;
+  const BASENAME_REGISTRY = '0xb94704422c2a1e396835a571837aa5ae53285a95';
+  const BASENAME_REVERSE_REGISTRAR = '0x79ea96012eea67a83431f1701b3dff7e37f9e282';
+  const BASENAME_RESOLVERS = new Set([
+    '0xc6d566a56a1aff6508b41f6c90ff131615583bcd',
+    '0x426fa03fb86e510d0dd9f70335cf102a98b10875'
+  ]);
 
   const state = {
     config:null,
@@ -37,6 +43,8 @@
     candidates:[],
     nominations:[],
     votes:[],
+    basenames:new Map(),
+    basenamePending:new Set(),
     selected:null,
     writeInChoice:null,
     pendingWriteIn:false,
@@ -136,6 +144,28 @@
     }
     throw lastError || new Error('Base batch RPC unavailable');
   }
+  async function rpcBatchLoose(calls){
+    if(!calls.length) return [];
+    let lastError;
+    const body = calls.map((call,index) => ({jsonrpc:'2.0',id:index,method:call.method,params:call.params}));
+    for(let offset=0;offset<RPCS.length;offset++){
+      const index = (rpcIndex + offset) % RPCS.length;
+      try{
+        const response = await fetchDeadline(RPCS[index],{
+          method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)
+        },15000);
+        const json = await response.json();
+        if(!Array.isArray(json)) throw new Error('Invalid batch response');
+        const byId = new Map(json.map(item => [item.id,item]));
+        rpcIndex = index;
+        return calls.map((_,i) => {
+          const item=byId.get(i);
+          return item && item.result !== undefined ? item.result : null;
+        });
+      }catch(error){ lastError = error; }
+    }
+    throw lastError || new Error('Base batch RPC unavailable');
+  }
   async function tokenBalance(address){
     if(!validAddress(address)) return 0n;
     const data = '0x70a08231' + lower(address).replace(/^0x/,'').padStart(64,'0');
@@ -160,6 +190,67 @@
       });
     }
     return output;
+  }
+
+  function decodeAddressWord(value){
+    if(!/^0x[0-9a-fA-F]{64}$/.test(String(value || ''))) return null;
+    const address='0x'+String(value).slice(-40).toLowerCase();
+    return /^0x0{40}$/.test(address) ? null : address;
+  }
+  function decodeAbiString(value){
+    try{
+      const hex=String(value || '').replace(/^0x/,'');
+      if(!/^[0-9a-fA-F]+$/.test(hex) || hex.length<128) return null;
+      const offset=Number(BigInt('0x'+hex.slice(0,64)));
+      const lengthAt=offset*2;
+      if(!Number.isSafeInteger(offset) || lengthAt+64>hex.length) return null;
+      const length=Number(BigInt('0x'+hex.slice(lengthAt,lengthAt+64)));
+      if(!Number.isSafeInteger(length) || length<1 || length>255 || lengthAt+64+length*2>hex.length) return null;
+      const bytes=new Uint8Array(length);
+      const start=lengthAt+64;
+      for(let index=0;index<length;index++) bytes[index]=parseInt(hex.slice(start+index*2,start+index*2+2),16);
+      const name=new TextDecoder('utf-8',{fatal:true}).decode(bytes).trim();
+      return name && lower(name).endsWith('.base.eth') && !/[\u0000-\u001f\u007f]/.test(name) ? name : null;
+    }catch(error){ return null; }
+  }
+  async function readBasenames(addresses){
+    const unique=[...new Set(addresses.map(lower).filter(validAddress))];
+    if(!unique.length) return new Map();
+    const nodes=await rpcBatchLoose(unique.map(address => ({method:'eth_call',params:[{
+      to:BASENAME_REVERSE_REGISTRAR,
+      data:'0xbffbe61c'+address.replace(/^0x/,'').padStart(64,'0')
+    },'latest']})));
+    const resolverWords=await rpcBatchLoose(nodes.map(node => ({method:'eth_call',params:[{
+      to:BASENAME_REGISTRY,
+      data:'0x0178b8bf'+String(node || '').replace(/^0x/,'').padStart(64,'0')
+    },'latest']})));
+    const resolvers=resolverWords.map(decodeAddressWord);
+    const lookups=[];
+    const lookupIndexes=[];
+    resolvers.forEach((resolver,index) => {
+      if(!resolver || !BASENAME_RESOLVERS.has(resolver) || !/^0x[0-9a-fA-F]{64}$/.test(String(nodes[index] || ''))) return;
+      lookupIndexes.push(index);
+      lookups.push({method:'eth_call',params:[{to:resolver,data:'0x691f3431'+String(nodes[index]).replace(/^0x/,'')},'latest']});
+    });
+    const names=await rpcBatchLoose(lookups);
+    const output=new Map(unique.map(address => [address,null]));
+    lookupIndexes.forEach((addressIndex,resultIndex) => output.set(unique[addressIndex],decodeAbiString(names[resultIndex])));
+    return output;
+  }
+  async function refreshBasenames(addresses){
+    const missing=[...new Set(addresses.map(lower).filter(address => validAddress(address) && !state.basenames.has(address) && !state.basenamePending.has(address)))];
+    if(!missing.length){ renderVoters(); return; }
+    missing.forEach(address => state.basenamePending.add(address));
+    renderVoters();
+    try{
+      const resolved=await readBasenames(missing);
+      missing.forEach(address => state.basenames.set(address,resolved.get(address) || null));
+    }catch(error){
+      missing.forEach(address => state.basenames.set(address,null));
+    }finally{
+      missing.forEach(address => state.basenamePending.delete(address));
+      renderVoters();
+    }
   }
 
   async function tokenAllowance(owner,spender){
@@ -297,7 +388,8 @@
       article.className = 'vote-slot';
       if(!candidate){
         article.classList.add('vote-slot-empty');
-        article.innerHTML = '<img class="vote-slot-logo" src="icon-192.png" alt="" width="52" height="52"><div class="vote-slot-copy"><strong>Open community seat</strong><span>Waiting for a $BURGERS holder write-in</span></div><div class="vote-result"><div class="vote-result-bar"><span style="width:0"></span></div><strong>—</strong><small>No nominee yet</small></div>';
+        article.innerHTML = '<img class="vote-slot-logo" src="icon-192.png" alt="" width="52" height="52"><div class="vote-slot-copy"><strong>Open community seat</strong><span>Waiting for a $BURGERS holder write-in</span></div><span class="vote-seat-open"></span>';
+        article.querySelector('.vote-seat-open').textContent=canBrowseWriteIn()?'Write in →':'Unfilled';
         if(canBrowseWriteIn()){
           article.tabIndex = 0;
           article.setAttribute('role','button');
@@ -319,9 +411,11 @@
       article.innerHTML = '<img class="vote-slot-logo" alt="" width="52" height="52" loading="lazy" decoding="async">' +
         '<div class="vote-slot-copy"><strong></strong><span><b></b><a target="_blank" rel="noopener">Giving Block profile ↗</a></span></div>' +
         '<div class="vote-result"><div class="vote-result-bar"><span></span></div><strong></strong><small></small></div>';
-      article.querySelector('.vote-slot-logo').src = candidate.logo;
+      const slotLogo=article.querySelector('.vote-slot-logo');
+      slotLogo.src = candidate.logo;
+      slotLogo.addEventListener('error',() => { slotLogo.src='icon-192.png'; slotLogo.classList.add('is-fallback'); },{once:true});
       article.querySelector('.vote-slot-copy strong').textContent = candidate.name;
-      article.querySelector('.vote-slot-copy b').textContent = candidate.country;
+      article.querySelector('.vote-slot-copy b').textContent = countryName(candidate.country);
       const link = article.querySelector('.vote-slot-copy a');
       link.href = candidate.url;
       link.addEventListener('click',event => event.stopPropagation());
@@ -333,6 +427,54 @@
       article.addEventListener('keydown',event => { if(event.key==='Enter' || event.key===' '){ event.preventDefault(); choose(); } });
       container.appendChild(article);
     }
+  }
+  function renderVoters(){
+    const container=$('voterList');
+    if(!container) return;
+    const votes=[...state.votes].sort((a,b) => a.weight===b.weight ? compareLogs(a,b) : (a.weight>b.weight?-1:1));
+    $('voterCount').textContent=votes.length;
+    $('voterCountLabel').textContent=votes.length===1?'voter':'voters';
+    container.setAttribute('aria-busy',String(state.loading && !votes.length));
+    container.replaceChildren();
+    if(!votes.length){
+      const empty=document.createElement('div');
+      empty.className='vote-voters-empty'; empty.setAttribute('role','listitem');
+      empty.innerHTML='<img src="icon-192.png" alt="" width="46" height="46"><div><strong>No votes on this ballot yet.</strong><span>The first confirmed vote will appear here automatically.</span></div>';
+      container.appendChild(empty);
+      return;
+    }
+    votes.forEach(vote => {
+      const candidate=state.byId.get(vote.orgId);
+      if(!candidate) return;
+      const address=lower(vote.address);
+      const basename=state.basenames.get(address);
+      const pending=state.basenamePending.has(address);
+      const row=document.createElement('article');
+      row.className='vote-voter'; row.setAttribute('role','listitem');
+
+      const identity=document.createElement('div'); identity.className='vote-voter-identity';
+      const avatar=document.createElement('span'); avatar.className='vote-voter-avatar'; avatar.setAttribute('aria-hidden','true'); avatar.textContent=address.slice(2,4).toUpperCase();
+      const identityCopy=document.createElement('span');
+      const addressLink=document.createElement('a'); addressLink.href='https://basescan.org/address/'+address; addressLink.target='_blank'; addressLink.rel='noopener';
+      addressLink.textContent=basename || short(address); addressLink.setAttribute('aria-label',(basename ? basename+', wallet ' : 'Wallet ')+address+' on BaseScan');
+      identityCopy.appendChild(addressLink);
+      const identityMeta=document.createElement('small');
+      identityMeta.textContent=basename ? short(address) : (pending ? 'Checking primary Base name…' : 'Base wallet');
+      if(pending) identityMeta.classList.add('is-resolving');
+      identityCopy.appendChild(identityMeta); identity.append(avatar,identityCopy);
+
+      const choice=document.createElement('a'); choice.className='vote-voter-choice'; choice.href=candidate.url; choice.target='_blank'; choice.rel='noopener';
+      const logo=document.createElement('img'); logo.src=candidate.logo; logo.alt=''; logo.width=36; logo.height=36; logo.loading='lazy'; logo.decoding='async';
+      logo.addEventListener('error',() => { logo.src='icon-192.png'; logo.classList.add('is-fallback'); },{once:true});
+      const choiceCopy=document.createElement('span'); const choiceLabel=document.createElement('small'); choiceLabel.textContent='Voted for'; const choiceName=document.createElement('strong'); choiceName.textContent=candidate.name; choiceCopy.append(choiceLabel,choiceName); choice.append(logo,choiceCopy);
+
+      const weight=document.createElement('div'); weight.className='vote-voter-weight';
+      const amount=document.createElement('strong'); amount.textContent=formatToken(vote.weight)+' $BURGERS';
+      const share=document.createElement('span'); share.textContent=formatPercent(vote.weight,state.totalWeight)+' of signal';
+      const transaction=document.createElement('a'); transaction.href='https://basescan.org/tx/'+vote.hash; transaction.target='_blank'; transaction.rel='noopener'; transaction.textContent='View vote ↗'; transaction.setAttribute('aria-label','View vote transaction on BaseScan');
+      weight.append(amount,share,transaction);
+      row.append(identity,choice,weight); container.appendChild(row);
+    });
   }
   function renderRound(){
     $('roundState').textContent = state.config.status === 'open' ? 'Open' : 'Closed';
@@ -347,6 +489,7 @@
     else if(seats < state.config.slots) setStatus('Voting is live for every filled seat · ' + (state.config.slots-seats) + ' write-in seat' + (state.config.slots-seats===1?' remains':'s remain') + ' open.','ok');
     else setStatus('All five seats are filled. The ballot is live.','ok');
     renderSlots();
+    renderVoters();
     updateActions();
   }
   function renderWallet(){
@@ -428,9 +571,11 @@
       if(state.selected && !state.candidates.some(org => org.id === state.selected)) state.selected = null;
       await refreshPower();
       renderRound();
+      refreshBasenames(state.votes.map(vote => vote.address));
     }catch(error){
       if(seq !== state.refreshSeq) return;
       setStatus('The Base RPC could not finish the tally. No partial result is being shown; try Refresh results.','error');
+      renderVoters();
       toast('Could not read the complete ballot from Base.',true);
     }finally{
       if(seq === state.refreshSeq){ state.loading=false; $('refreshBallot').disabled=false; }
