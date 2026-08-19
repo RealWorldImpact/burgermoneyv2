@@ -477,7 +477,7 @@
       article.className = 'vote-slot';
       if(!candidate){
         article.classList.add('vote-slot-empty');
-        article.innerHTML = '<img class="vote-slot-logo" src="icon-192.png" alt="" width="52" height="52"><div class="vote-slot-copy"><strong>Open community seat</strong><span>Waiting for a $BURGERS holder write-in</span></div><span class="vote-seat-open"></span>';
+        article.innerHTML = '<span class="vote-slot-plus" aria-hidden="true">+</span><div class="vote-slot-copy"><strong>Open community seat</strong><span>Waiting for a $BURGERS holder write-in</span></div><span class="vote-seat-open"></span>';
         article.querySelector('.vote-seat-open').textContent=canBrowseWriteIn()?'Write in →':'Unfilled';
         if(canBrowseWriteIn()){
           article.tabIndex = 0;
