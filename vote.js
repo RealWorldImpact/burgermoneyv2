@@ -28,6 +28,8 @@
     '0xc6d566a56a1aff6508b41f6c90ff131615583bcd',
     '0x426fa03fb86e510d0dd9f70335cf102a98b10875'
   ]);
+  const BASE_ETH_NAMEHASH = '0xff1e3c0eb00ec714e34b6114125fbde1dea2f24a72fbf672e7b7fd5690328e10';
+  const BASENAME_AVATAR_GATEWAY = 'https://gateway.pinata.cloud/ipfs/';
 
   const state = {
     config:null,
@@ -44,6 +46,7 @@
     nominations:[],
     votes:[],
     basenames:new Map(),
+    avatars:new Map(),
     basenamePending:new Set(),
     selected:null,
     writeInChoice:null,
@@ -157,11 +160,12 @@
         const json = await response.json();
         if(!Array.isArray(json)) throw new Error('Invalid batch response');
         const byId = new Map(json.map(item => [item.id,item]));
-        rpcIndex = index;
-        return calls.map((_,i) => {
+        const results=calls.map((_,i) => {
           const item=byId.get(i);
           return item && item.result !== undefined ? item.result : null;
         });
+        if(results.some(result => result !== null)){ rpcIndex = index; return results; }
+        lastError=new Error('RPC batch returned no results');
       }catch(error){ lastError = error; }
     }
     throw lastError || new Error('Base batch RPC unavailable');
@@ -197,7 +201,7 @@
     const address='0x'+String(value).slice(-40).toLowerCase();
     return /^0x0{40}$/.test(address) ? null : address;
   }
-  function decodeAbiString(value){
+  function decodeAbiText(value,maxLength){
     try{
       const hex=String(value || '').replace(/^0x/,'');
       if(!/^[0-9a-fA-F]+$/.test(hex) || hex.length<128) return null;
@@ -205,13 +209,87 @@
       const lengthAt=offset*2;
       if(!Number.isSafeInteger(offset) || lengthAt+64>hex.length) return null;
       const length=Number(BigInt('0x'+hex.slice(lengthAt,lengthAt+64)));
-      if(!Number.isSafeInteger(length) || length<1 || length>255 || lengthAt+64+length*2>hex.length) return null;
+      if(!Number.isSafeInteger(length) || length<1 || length>maxLength || lengthAt+64+length*2>hex.length) return null;
       const bytes=new Uint8Array(length);
       const start=lengthAt+64;
       for(let index=0;index<length;index++) bytes[index]=parseInt(hex.slice(start+index*2,start+index*2+2),16);
-      const name=new TextDecoder('utf-8',{fatal:true}).decode(bytes).trim();
-      return name && lower(name).endsWith('.base.eth') && !/[\u0000-\u001f\u007f]/.test(name) ? name : null;
+      const text=new TextDecoder('utf-8',{fatal:true}).decode(bytes).trim();
+      return text && !/[\u0000-\u001f\u007f]/.test(text) ? text : null;
     }catch(error){ return null; }
+  }
+  function decodeAbiString(value){
+    const name=decodeAbiText(value,255);
+    return name && lower(name).endsWith('.base.eth') ? name : null;
+  }
+  function utf8Hex(value){
+    return '0x'+[...new TextEncoder().encode(String(value))].map(byte => byte.toString(16).padStart(2,'0')).join('');
+  }
+  function safeAvatarUrl(value){
+    const raw=String(value || '').trim();
+    if(!raw || raw.length>2048) return null;
+    if(/^ipfs:\/\//i.test(raw)){
+      let path=raw.replace(/^ipfs:\/\//i,'').replace(/^ipfs\//i,'');
+      const parts=path.split('/').filter(Boolean);
+      if(!parts.length || !/^[a-zA-Z0-9]{32,}$/.test(parts[0])) return null;
+      try{ path=parts.map(part => encodeURIComponent(decodeURIComponent(part))).join('/'); }
+      catch(error){ return null; }
+      return BASENAME_AVATAR_GATEWAY+path;
+    }
+    try{
+      const url=new URL(raw);
+      return url.protocol==='https:' && url.hostname==='gateway.pinata.cloud' && url.pathname.startsWith('/ipfs/') ? url.href : null;
+    }catch(error){ return null; }
+  }
+  async function basenameNamehashes(names){
+    const unique=[...new Set(names.map(lower).filter(name => name.endsWith('.base.eth')))];
+    const records=unique.map(name => {
+      const parts=name.split('.');
+      const valid=parts.length>=3 && parts.at(-2)==='base' && parts.at(-1)==='eth' && parts.slice(0,-2).every(Boolean);
+      return {name,labels:valid ? parts.slice(0,-2).reverse() : [],node:valid ? BASE_ETH_NAMEHASH : null};
+    });
+    const depth=Math.max(0,...records.map(record => record.labels.length));
+    for(let level=0;level<depth;level++){
+      const active=records.filter(record => record.node && record.labels[level]);
+      if(!active.length) continue;
+      const labelHashes=await rpcBatchLoose(active.map(record => ({method:'web3_sha3',params:[utf8Hex(record.labels[level])]})));
+      const nodeHashes=await rpcBatchLoose(active.map((record,index) => {
+        const labelHash=String(labelHashes[index] || '');
+        const data=/^0x[0-9a-fA-F]{64}$/.test(labelHash) ? '0x'+record.node.slice(2)+labelHash.slice(2) : '0x';
+        return {method:'web3_sha3',params:[data]};
+      }));
+      active.forEach((record,index) => {
+        const labelHash=String(labelHashes[index] || '');
+        const nodeHash=String(nodeHashes[index] || '');
+        record.node=/^0x[0-9a-fA-F]{64}$/.test(labelHash) && /^0x[0-9a-fA-F]{64}$/.test(nodeHash) ? lower(nodeHash) : null;
+      });
+    }
+    return new Map(records.map(record => [record.name,record.node]));
+  }
+  function encodeTextCall(node,key){
+    const keyHex=utf8Hex(key).slice(2);
+    const paddedLength=Math.ceil(keyHex.length/64)*64;
+    return '0x59d1d43c'+node.replace(/^0x/,'')+(64).toString(16).padStart(64,'0')+(keyHex.length/2).toString(16).padStart(64,'0')+keyHex.padEnd(paddedLength,'0');
+  }
+  async function readBasenameAvatars(names){
+    const unique=[...new Set(names.map(lower).filter(Boolean))];
+    const output=new Map(unique.map(name => [name,null]));
+    if(!unique.length) return output;
+    const nodes=await basenameNamehashes(unique);
+    const resolverWords=await rpcBatchLoose(unique.map(name => {
+      const node=nodes.get(name);
+      return {method:'eth_call',params:[{to:BASENAME_REGISTRY,data:'0x0178b8bf'+String(node || '').replace(/^0x/,'').padStart(64,'0')},'latest']};
+    }));
+    const resolvers=resolverWords.map(decodeAddressWord);
+    const calls=[]; const indexes=[];
+    unique.forEach((name,index) => {
+      const node=nodes.get(name); const resolver=resolvers[index];
+      if(!node || !resolver || !BASENAME_RESOLVERS.has(resolver)) return;
+      indexes.push(index); calls.push({method:'eth_call',params:[{to:resolver,data:encodeTextCall(node,'avatar')},'latest']});
+    });
+    if(!calls.length) return output;
+    const values=await rpcBatchLoose(calls);
+    indexes.forEach((nameIndex,resultIndex) => output.set(unique[nameIndex],safeAvatarUrl(decodeAbiText(values[resultIndex],2048))));
+    return output;
   }
   async function readBasenames(addresses){
     const unique=[...new Set(addresses.map(lower).filter(validAddress))];
@@ -245,8 +323,16 @@
     try{
       const resolved=await readBasenames(missing);
       missing.forEach(address => state.basenames.set(address,resolved.get(address) || null));
+      renderVoters();
+      try{
+        const avatars=await readBasenameAvatars([...resolved.values()].filter(Boolean));
+        missing.forEach(address => {
+          const name=resolved.get(address);
+          state.avatars.set(address,name ? avatars.get(lower(name)) || null : null);
+        });
+      }catch(error){ missing.forEach(address => state.avatars.set(address,null)); }
     }catch(error){
-      missing.forEach(address => state.basenames.set(address,null));
+      missing.forEach(address => { state.basenames.set(address,null); state.avatars.set(address,null); });
     }finally{
       missing.forEach(address => state.basenamePending.delete(address));
       renderVoters();
@@ -447,13 +533,18 @@
       if(!candidate) return;
       const address=lower(vote.address);
       const basename=state.basenames.get(address);
+      const avatarUrl=state.avatars.get(address);
       const pending=state.basenamePending.has(address);
       const row=document.createElement('article');
       row.className='vote-voter'; row.setAttribute('role','listitem');
       if(vote.weight<=0n) row.classList.add('is-zero');
 
       const identity=document.createElement('div'); identity.className='vote-voter-identity';
-      const avatar=document.createElement('span'); avatar.className='vote-voter-avatar'; avatar.setAttribute('aria-hidden','true'); avatar.textContent=address.slice(2,4).toUpperCase();
+      const avatar=document.createElement('span'); avatar.className='vote-voter-avatar';
+      const avatarImage=document.createElement('img'); avatarImage.src=avatarUrl || 'icon-192.png'; avatarImage.alt=basename && avatarUrl ? basename+' avatar' : ''; avatarImage.width=40; avatarImage.height=40; avatarImage.decoding='async'; avatarImage.referrerPolicy='no-referrer';
+      if(!avatarUrl) avatarImage.classList.add('is-fallback');
+      avatarImage.addEventListener('error',() => { avatarImage.src='icon-192.png'; avatarImage.alt=''; avatarImage.classList.add('is-fallback'); },{once:true});
+      avatar.appendChild(avatarImage);
       const identityCopy=document.createElement('span');
       const addressLink=document.createElement('a'); addressLink.href='https://basescan.org/address/'+address; addressLink.target='_blank'; addressLink.rel='noopener';
       addressLink.textContent=basename || short(address); addressLink.setAttribute('aria-label',(basename ? basename+', wallet ' : 'Wallet ')+address+' on BaseScan');
@@ -470,9 +561,8 @@
 
       const weight=document.createElement('div'); weight.className='vote-voter-weight';
       const amount=document.createElement('strong'); amount.textContent=formatToken(vote.weight)+' $BURGERS';
-      const share=document.createElement('span'); share.textContent=vote.weight>0n ? formatPercent(vote.weight,state.totalWeight)+' of signal' : 'No current voting weight';
       const transaction=document.createElement('a'); transaction.href='https://basescan.org/tx/'+vote.hash; transaction.target='_blank'; transaction.rel='noopener'; transaction.textContent='View vote ↗'; transaction.setAttribute('aria-label','View vote transaction on BaseScan');
-      weight.append(amount,share,transaction);
+      weight.append(amount,transaction);
       row.append(identity,choice,weight); container.appendChild(row);
     });
   }
