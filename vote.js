@@ -30,6 +30,7 @@
   ]);
   const BASE_ETH_NAMEHASH = '0xff1e3c0eb00ec714e34b6114125fbde1dea2f24a72fbf672e7b7fd5690328e10';
   const BASENAME_AVATAR_GATEWAY = 'https://gateway.pinata.cloud/ipfs/';
+  const BASENAME_AVATAR_THUMBNAIL = 'https://res.cloudinary.com/base-web/image/fetch/w_128/f_webp/';
 
   const state = {
     config:null,
@@ -239,6 +240,9 @@
       const url=new URL(raw);
       return url.protocol==='https:' && url.hostname==='gateway.pinata.cloud' && url.pathname.startsWith('/ipfs/') ? url.href : null;
     }catch(error){ return null; }
+  }
+  function basenameAvatarThumbnail(value){
+    return BASENAME_AVATAR_THUMBNAIL+encodeURIComponent(value);
   }
   async function basenameNamehashes(names){
     const unique=[...new Set(names.map(lower).filter(name => name.endsWith('.base.eth')))];
@@ -542,9 +546,15 @@
       const identity=document.createElement('div'); identity.className='vote-voter-identity';
       const avatar=document.createElement('span'); avatar.className='vote-voter-avatar';
       const avatarImage=document.createElement('img'); avatarImage.src=avatarUrl || 'icon-192.png'; avatarImage.alt=basename && avatarUrl ? basename+' avatar' : ''; avatarImage.decoding='async'; avatarImage.referrerPolicy='no-referrer';
+      const avatarPicture=document.createElement('picture');
+      let avatarSource=null; let fallbackApplied=!avatarUrl;
+      if(avatarUrl){ avatarSource=document.createElement('source'); avatarSource.media='(min-width:681px)'; avatarSource.srcset=basenameAvatarThumbnail(avatarUrl); avatarPicture.appendChild(avatarSource); }
       if(!avatarUrl) avatarImage.classList.add('is-fallback');
-      avatarImage.addEventListener('error',() => { avatarImage.src='icon-192.png'; avatarImage.alt=''; avatarImage.classList.add('is-fallback'); },{once:true});
-      avatar.appendChild(avatarImage);
+      avatarImage.addEventListener('error',() => {
+        if(avatarSource && avatarSource.isConnected){ avatarSource.remove(); avatarImage.src=avatarUrl; return; }
+        if(!fallbackApplied){ fallbackApplied=true; avatarImage.src='icon-192.png'; avatarImage.alt=''; avatarImage.classList.add('is-fallback'); }
+      });
+      avatarPicture.appendChild(avatarImage); avatar.appendChild(avatarPicture);
       const identityCopy=document.createElement('span');
       const addressLink=document.createElement('a'); addressLink.href='https://basescan.org/address/'+address; addressLink.target='_blank'; addressLink.rel='noopener';
       addressLink.textContent=basename || short(address); addressLink.setAttribute('aria-label',(basename ? basename+', wallet ' : 'Wallet ')+address+' on BaseScan');
