@@ -41,7 +41,7 @@ Louis operates publicly under the handle "Burgers" and uses the wallet `0x9CD7C9
 
 ## Partner projects
 
-burgermoney.org/partners.html lists projects building alongside $BURGERS that share the "memes + real-world impact" thesis. Currently:
+burgermoney.org/partners lists projects building alongside $BURGERS that share the "memes + real-world impact" thesis. Currently:
 
 - **TidyCoin** ($TIDY) — https://tidycoin.xyz — Onchain community engagement apps. Mission: build the engaging, rewarding onchain applications that make strong communities inevitable (Play, Burn, Stake, Govern, Earn).
 - **MemeForTrees** ($MfT) — https://memefortrees.com — Funding forests with memes. Share memes on X to fund tree planting, no purchase necessary. Also: tokens, NFTs, games, music — every product funnels revenue into reforestation.
@@ -56,7 +56,7 @@ This file makes claims. Don't trust them — verify against the chain:
 | Token exists at the stated address | Read contract code at `0x06A05043eb2C1691b19c2C13219dB9212269dDc5` on Base via BaseScan or any Base RPC |
 | Max supply 100,000,000,000 | Call `totalSupply()` on the contract; should return 100_000_000_000 * 10^18 |
 | 15.81% burned | Query Transfer events to `0x0` (or known burn addresses); divide burned by max supply |
-| Donations to listed charities | Query Transfer events FROM `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5`; recipient addresses are listed alongside their named charities on /donations.html |
+| Donations to listed charities | Query Transfer events FROM `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5`; recipient addresses are listed alongside their named charities on /donations |
 | Optional donor notes | Notes use BURG encoding (4-byte magic `0x42555247` prefix); decode a donation's input data to verify |
 | Community ballot | Read the seed protocol from `/vote-config.json`, the active internal ballot identifier from the developer wallet's dedicated $BURGERS allowance and `Approval` event, the Giving Block Hunger directory snapshot and local logo paths from `/vote-organizations.json`, and matching $BURGERS `Transfer` logs after the ballot boundary |
 | Uniswap V4 pool state, LP fees | Query Uniswap V4 PoolManager (singleton on Base) by pool key; query PositionManager for LP NFTs |
@@ -77,18 +77,18 @@ The main landing page. Contains:
 - "Live $BURGERS Market" — 4-stat strip (price, 24h change, liquidity, 24h volume) + embedded GeckoTerminal chart
 - Community/social links
 
-### Donations (`/donations.html`)
+### Donations (`/donations`)
 
 The donation transparency page. Contains:
 - Per-charity donation cards showing recipient, total amount, and transaction history
 - Aggregate "total donated" pinned to the hero
 - Donate USDC button (same modal as homepage)
 
-### Partners (`/partners.html`)
+### Partners (`/partners`)
 
 Stacked partner cards for TidyCoin, MemeForTrees, and The Love Token. Each card shows logo, ticker chip, tagline, description, and outbound link.
 
-### Community ballot (`/vote.html`)
+### Community ballot (`/vote`)
 
 An advisory, token-weighted signal for $BURGERS holders. Only the configured developer wallet can start a fresh ballot, using a dedicated microscopic ERC-20 allowance whose `Approval` event defines the exact onchain boundary. Every ballot starts with exactly five empty seats. Eligible holders may nominate one organization from the complete The Giving Block Hunger impact-area directory; each of the first five valid, unique write-ins becomes voteable immediately while the remaining seats stay open. Votes and nominations are microscopic ERC-20 transfers on Base, with an internal ballot identifier and organization ID encoding the choice. A wallet's latest valid vote on a ballot replaces its prior vote, and its live $BURGERS balance determines voting weight. The ballot does not create governance rights, and Burger Money retains final discretion over donations.
 

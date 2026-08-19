@@ -4,7 +4,7 @@ Ballot advancement is controlled on Base by the project developer wallet, `0x9CD
 
 ## Start a fresh ballot
 
-1. Open `/vote.html` in a browser with the developer wallet available.
+1. Open `/vote` in a browser with the developer wallet available.
 2. Select **Connect wallet** and approve the Base network switch if needed.
 3. Use the developer-only panel and select **Start fresh ballot →**.
 4. Confirm the token approval transaction. No $BURGERS is transferred.

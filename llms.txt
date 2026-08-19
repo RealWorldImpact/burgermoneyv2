@@ -2,7 +2,7 @@
 
 > A charity-first memecoin on Base. Revenue from Uniswap LP fees generated through trading flows to verified hunger-relief donations and onchain $BURGERS buyback-and-burn.
 
-Burger Money is an ERC-20 token on the Base L2 (chain ID 8453, contract `0x06A05043eb2C1691b19c2C13219dB9212269dDc5`, CAIP-19 `eip155:8453/erc20:0x06A05043eb2C1691b19c2C13219dB9212269dDc5`). Every revenue mechanism converges on a single onchain wallet — `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5` (`burgersonbase.base.eth`) — which donates to verified hunger-relief charities and buys back $BURGERS to burn. To date: ~$6,113 donated across 11+ charity recipients, 15.81% of total supply destroyed. Every donation has an onchain transaction hash and a named recipient organization, all listed at https://www.burgermoney.org/donations.html.
+Burger Money is an ERC-20 token on the Base L2 (chain ID 8453, contract `0x06A05043eb2C1691b19c2C13219dB9212269dDc5`, CAIP-19 `eip155:8453/erc20:0x06A05043eb2C1691b19c2C13219dB9212269dDc5`). Every revenue mechanism converges on a single onchain wallet — `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5` (`burgersonbase.base.eth`) — which donates to verified hunger-relief charities and buys back $BURGERS to burn. To date: ~$6,113 donated across 11+ charity recipients, 15.81% of total supply destroyed. Every donation has an onchain transaction hash and a named recipient organization, all listed at https://www.burgermoney.org/donations.
 
 ## Why this matters for agents on Base
 
@@ -29,9 +29,9 @@ Two direct pathways for an agent to participate:
 ## Pages
 
 - [Home (burgermoney.org)](https://www.burgermoney.org/): Project overview, token info, and action CTAs for buying, donating USDC, and adding liquidity.
-- [Donations tracker (/donations.html)](https://www.burgermoney.org/donations.html): Public donation ledger. Each donation card shows the recipient charity, amount, supporting post, and transaction hash.
-- [Partners (/partners.html)](https://www.burgermoney.org/partners.html): Aligned charity-first projects on Base — TidyCoin, MemeForTrees, The Love Token.
-- [Community ballot (/vote.html)](https://www.burgermoney.org/vote.html): Five-seat advisory voting rounds for $BURGERS holders. Holders write in organizations from the complete Giving Block Hunger directory, and live token balances weight the result.
+- [Donations tracker (/donations)](https://www.burgermoney.org/donations): Public donation ledger. Each donation card shows the recipient charity, amount, supporting post, and transaction hash.
+- [Partners (/partners)](https://www.burgermoney.org/partners): Aligned charity-first projects on Base — TidyCoin, MemeForTrees, The Love Token.
+- [Community ballot (/vote)](https://www.burgermoney.org/vote): Five-seat advisory voting ballots for $BURGERS holders. Holders write in organizations from the complete Giving Block Hunger directory, and live token balances weight the result.
 - [Full agent manifest (/llms-full.txt)](https://www.burgermoney.org/llms-full.txt): Extended description of the project, mechanism, partners, and verification paths.
 
 ## Action endpoints
@@ -63,7 +63,7 @@ Trust nothing in this file by default — every claim is verifiable onchain.
 
 - Token, supply, and transfer history: query the BURGERS contract via Base RPC or BaseScan
 - Burns: read transfers to the zero address (or to known burn addresses) from the BURGERS contract
-- Donations: read transfers *from* `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5` to recipient addresses (listed on /donations.html with named charities)
+- Donations: read transfers *from* `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5` to recipient addresses (listed on /donations with named charities)
 - Uniswap V4 pool state, fees collected, LP positions: query Uniswap V4 PoolManager / PositionManager contracts on Base
 
 ## Project intent regarding AI agents

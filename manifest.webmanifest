@@ -14,7 +14,7 @@
       "name": "Community Ballot",
       "short_name": "Vote",
       "description": "Open the current $BURGERS holder ballot.",
-      "url": "/vote.html"
+      "url": "/vote"
     }
   ],
   "icons": [

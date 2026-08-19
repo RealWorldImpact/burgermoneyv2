@@ -9,19 +9,19 @@
 
   <!-- Donations tracker — live onchain donation ledger and impact record -->
   <url>
-    <loc>https://www.burgermoney.org/donations.html</loc>
+    <loc>https://www.burgermoney.org/donations</loc>
     <lastmod>2026-08-18</lastmod>
   </url>
 
   <!-- Partners — aligned charity-first projects on Base -->
   <url>
-    <loc>https://www.burgermoney.org/partners.html</loc>
+    <loc>https://www.burgermoney.org/partners</loc>
     <lastmod>2026-08-18</lastmod>
   </url>
 
   <!-- Community voting — holder write-ins and token-weighted hunger ballot -->
   <url>
-    <loc>https://www.burgermoney.org/vote.html</loc>
+    <loc>https://www.burgermoney.org/vote</loc>
     <lastmod>2026-08-18</lastmod>
   </url>
 
