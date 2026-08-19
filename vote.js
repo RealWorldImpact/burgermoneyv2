@@ -321,12 +321,14 @@
   }
   async function refreshBasenames(addresses){
     const missing=[...new Set(addresses.map(lower).filter(address => validAddress(address) && !state.basenames.has(address) && !state.basenamePending.has(address)))];
-    if(!missing.length){ renderVoters(); return; }
+    if(!missing.length){ renderSlots(); renderVoters(); return; }
     missing.forEach(address => state.basenamePending.add(address));
+    renderSlots();
     renderVoters();
     try{
       const resolved=await readBasenames(missing);
       missing.forEach(address => state.basenames.set(address,resolved.get(address) || null));
+      renderSlots();
       renderVoters();
       try{
         const avatars=await readBasenameAvatars([...resolved.values()].filter(Boolean));
@@ -339,6 +341,7 @@
       missing.forEach(address => { state.basenames.set(address,null); state.avatars.set(address,null); });
     }finally{
       missing.forEach(address => state.basenamePending.delete(address));
+      renderSlots();
       renderVoters();
     }
   }
@@ -494,20 +497,29 @@
       article.tabIndex = 0;
       article.setAttribute('role','radio');
       article.setAttribute('aria-checked',String(state.selected === candidate.id));
-      article.setAttribute('aria-label',candidate.name + ', ' + percent + ', ' + formatToken(candidate.total) + ' BURGERS');
       if(state.selected === candidate.id) article.classList.add('is-selected');
       if(myVote && myVote.orgId === candidate.id) article.classList.add('is-mine');
       article.innerHTML = '<img class="vote-slot-logo" alt="" width="52" height="52" loading="lazy" decoding="async">' +
-        '<div class="vote-slot-copy"><strong></strong><span><b></b><a target="_blank" rel="noopener">Giving Block profile ↗</a></span></div>' +
+        '<div class="vote-slot-copy"><strong></strong><span class="vote-slot-meta"><b></b><a class="vote-slot-profile" target="_blank" rel="noopener">Giving Block profile ↗</a></span><span class="vote-slot-submitter"><small>Written in by</small><a target="_blank" rel="noopener"></a></span></div>' +
         '<div class="vote-result"><div class="vote-result-bar"><span></span></div><strong></strong><small></small></div>';
       const slotLogo=article.querySelector('.vote-slot-logo');
       slotLogo.src = candidate.logo;
       slotLogo.addEventListener('error',() => { slotLogo.src='icon-192.png'; slotLogo.classList.add('is-fallback'); },{once:true});
       article.querySelector('.vote-slot-copy strong').textContent = candidate.name;
       article.querySelector('.vote-slot-copy b').textContent = countryName(candidate.country);
-      const link = article.querySelector('.vote-slot-copy a');
+      const link = article.querySelector('.vote-slot-profile');
       link.href = candidate.url;
       link.addEventListener('click',event => event.stopPropagation());
+      const submitter=lower(candidate.nomination && candidate.nomination.address);
+      const submitterName=state.basenames.get(submitter);
+      const submitterPending=state.basenamePending.has(submitter);
+      const submitterLabel=submitterName || (submitterPending ? 'Finding Base name…' : short(submitter));
+      const submitterLink=article.querySelector('.vote-slot-submitter a');
+      submitterLink.href='https://basescan.org/address/'+submitter;
+      submitterLink.textContent=submitterLabel;
+      submitterLink.setAttribute('aria-label',(submitterName ? submitterName+', wallet ' : 'Wallet ')+submitter+' on BaseScan');
+      submitterLink.addEventListener('click',event => event.stopPropagation());
+      article.setAttribute('aria-label',candidate.name + ', written in by ' + submitterLabel + ', ' + percent + ', ' + formatToken(candidate.total) + ' BURGERS');
       article.querySelector('.vote-result-bar span').style.width = percent;
       article.querySelector('.vote-result>strong').textContent = percent;
       article.querySelector('.vote-result small').textContent = formatToken(candidate.total) + ' $BURGERS';
@@ -671,7 +683,7 @@
       if(state.selected && !state.candidates.some(org => org.id === state.selected)) state.selected = null;
       await refreshPower();
       renderRound();
-      refreshBasenames(state.votes.map(vote => vote.address));
+      refreshBasenames(state.votes.map(vote => vote.address).concat(state.nominations.map(nomination => nomination.address)));
     }catch(error){
       if(seq !== state.refreshSeq) return;
       setStatus('The Base RPC could not finish the tally. No partial result is being shown; try Refresh results.','error');
