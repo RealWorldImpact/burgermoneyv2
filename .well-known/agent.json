@@ -37,7 +37,7 @@
     {
       "id": "get-live-market",
       "name": "Get live $BURGERS market data",
-      "description": "Returns spot price, market cap, 24h volume, 24h price change, and pool liquidity. Pulls live from DEX Screener: https://api.dexscreener.com/latest/dex/tokens/0x06A05043eb2C1691b19c2C13219dB9212269dDc5",
+      "description": "Returns spot price, market cap, 24h volume, 24h price change, and pool liquidity through Burger Money's resilient market endpoint: https://www.burgermoney.org/api/market",
       "tags": ["market-data", "price", "live"],
       "examples": [
         "What is the current price of $BURGERS?",

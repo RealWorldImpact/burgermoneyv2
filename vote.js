@@ -1013,7 +1013,7 @@
   async function loadHeaderMarket(){
     const change=$('tkChange');
     try{
-      const response=await fetchDeadline('https://api.dexscreener.com/latest/dex/tokens/'+CANONICAL_TOKEN,{},10000);
+      const response=await fetchDeadline('/api/market',{},10000);
       const data=await response.json();
       if(!data.pairs || !data.pairs.length) throw new Error('Market data unavailable');
       const pair=data.pairs.filter(item => item.chainId==='base').sort((a,b) => Number(b.liquidity && b.liquidity.usd || 0)-Number(a.liquidity && a.liquidity.usd || 0))[0] || data.pairs[0];

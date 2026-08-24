@@ -1020,7 +1020,7 @@ function paintTicker(mcap,changeH24){
 async function loadPrice(){
   const tkChange=document.getElementById('tkChange');
   try{
-    const res=await fetchWithTimeout("https://api.dexscreener.com/latest/dex/tokens/"+CA);
+    const res=await fetchWithTimeout("/api/market");
     const data=await res.json();
     if(!data.pairs||!data.pairs.length)throw 0;
     const pair=data.pairs.filter(p=>p.chainId==="base").sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0))[0]||data.pairs[0];
