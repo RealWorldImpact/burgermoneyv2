@@ -2,7 +2,7 @@
 
 > A charity-first memecoin on Base. Revenue from Uniswap LP fees generated through trading flows to verified hunger-relief donations and onchain $BURGERS buyback-and-burn.
 
-Burger Money is an ERC-20 token on the Base L2 (chain ID 8453, contract `0x06A05043eb2C1691b19c2C13219dB9212269dDc5`, CAIP-19 `eip155:8453/erc20:0x06A05043eb2C1691b19c2C13219dB9212269dDc5`). Every revenue mechanism converges on a single onchain wallet — `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5` (`burgersonbase.base.eth`) — which donates to verified hunger-relief charities and buys back $BURGERS to burn. To date: ~$6,213 donated across 11+ charity recipients, 15.81% of total supply destroyed. Every donation has an onchain transaction hash and a named recipient organization, all listed at https://www.burgermoney.org/donations.
+Burger Money is an ERC-20 token on the Base L2 (chain ID 8453, contract `0x06A05043eb2C1691b19c2C13219dB9212269dDc5`, CAIP-19 `eip155:8453/erc20:0x06A05043eb2C1691b19c2C13219dB9212269dDc5`). Every revenue mechanism converges on a single onchain wallet — `0x9CD7C9196A4C1836A3DF089cb210272e07e6A5e5` (`burgersonbase.base.eth`) — which donates to verified hunger-relief charities and buys back $BURGERS to burn. To date: ~$6,313 donated across 11+ charity recipients, 15.81% of total supply destroyed. Every donation has an onchain transaction hash and a named recipient organization, all listed at https://www.burgermoney.org/donations.
 
 ## Why this matters for agents on Base
 
