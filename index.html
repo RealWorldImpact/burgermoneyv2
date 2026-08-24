@@ -820,7 +820,7 @@
     "geckoterminal": "https://www.geckoterminal.com/base/pools/0xee99d2ccc718c58087ad2a5da6143e0aad073c5301cc8f51df186a53dcb6e439"
   },
   "liveData": {
-    "priceApi": "https://www.burgermoney.org/api/market",
+    "priceApi": "https://www.burgermoney.org/api/site-data",
     "burnRpc": "balanceOf(deadAddress) on contract via any Base RPC (e.g. https://mainnet.base.org)"
   }
 }
@@ -1118,7 +1118,7 @@ function paintStats(s){
 async function loadPrice(){
   const tkChange=document.getElementById('tkChange');
   try{
-    const res=await fetchWithTimeout("/api/market");
+    const res=await fetchWithTimeout("/api/site-data");
     const data=await res.json();
     if(!data.pairs||!data.pairs.length)throw 0;
     let pool=data.pairs;
